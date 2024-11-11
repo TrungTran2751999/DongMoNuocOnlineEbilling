@@ -26,7 +26,7 @@ using System.Web.Configuration;
 namespace EOSCRM.Web.Forms.KhachHang.BaoCao
 {
 
-    public partial class DuyetTNCN : Authentication
+    public partial class ManagerDuyetTNCN : Authentication
     {
         private readonly KhuVucDao _kvDao = new KhuVucDao();
         private readonly CMAsDao _cmasDao = new CMAsDao();
@@ -284,7 +284,7 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
                 MaLoTrinh = maLoTrinh
             };
 
-            var listInfo = _dongMoNuocOnlineDao.GetKH_TNCN_To_Leader_PheDuyet(dieuKienLoc);
+            var listInfo = _dongMoNuocOnlineDao.GetKH_TNCN_To_Manager_PheDuyet(dieuKienLoc);
 
             gvListKH.DataSource = listInfo;
             gvListKH.PagerInforText = listInfo.Count.ToString();
@@ -413,6 +413,33 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
         //        udpNgayTNCN.Visible = false;
         //    }
         //}
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public static int PheDuyetTNCN(string dieuKienLocStr, string loginName)
+        {
+            var dieuKienLocObj = JsonConvert.DeserializeObject<DieuKienLoc>(dieuKienLocStr);
+            if (dieuKienLocObj.NgayLoc != null) dieuKienLocObj.NgayLoc = ((DateTime)ConvertUtil.ToDateTime(dieuKienLocObj.NgayLoc)).ToString("yyyy-MM-dd");
+            var resp = new DongMoNuocOnlineDao().ManagerPheDuyetThongBaoTamNgungCapNuoc(dieuKienLocObj, loginName);
+            return resp;
+        }
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public static int HuyPheDuyetTNCN(string dieuKienLocStr)
+        {
+            var dieuKienLocObj = JsonConvert.DeserializeObject<DieuKienLoc>(dieuKienLocStr);
+            if (dieuKienLocObj.NgayLoc != null) dieuKienLocObj.NgayLoc = ((DateTime)ConvertUtil.ToDateTime(dieuKienLocObj.NgayLoc)).ToString("yyyy-MM-dd");
+            var resp = new DongMoNuocOnlineDao().Manager_HuyPheDuyetTNCN(dieuKienLocObj);
+            return resp;
+        }
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public static int BoHuyPheDuyetTNCN(string dieuKienLocStr)
+        {
+            var dieuKienLocObj = JsonConvert.DeserializeObject<DieuKienLoc>(dieuKienLocStr);
+            if (dieuKienLocObj.NgayLoc != null) dieuKienLocObj.NgayLoc = ((DateTime)ConvertUtil.ToDateTime(dieuKienLocObj.NgayLoc)).ToString("yyyy-MM-dd");
+            var resp = new DongMoNuocOnlineDao().Leader_Bo_HuyPheDuyetTNCN(dieuKienLocObj);
+            return resp;
+        }
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public static string GetThongBaoTNCN(string khConNoStr)

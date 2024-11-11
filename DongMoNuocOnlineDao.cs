@@ -815,7 +815,7 @@ namespace EOSCRM.Dao
         #endregion
 
         #region Giai đoạn thông báo tạm ngừng cấp nước
-        public List<KhConNo> GetKH_TNCN(DieuKienLoc dieuKienLoc)
+        public List<KhConNo> GetKH_TNCN_To_Leader_PheDuyet(DieuKienLoc dieuKienLoc)
         {
             try
             {
@@ -831,12 +831,14 @@ namespace EOSCRM.Dao
                                                         tt.TONGTIEN as TongTien,
                                                         kh.DIDONG1 as SoDienThoai,
 			                                            kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi,
-                                                        kv.TENHIEU as XNCN
+                                                        kv.TENHIEU as XNCN,
+                                                        dmno.ManagerDuyetTNCN as ManagerDuyetTNCN,
+                                                        dmno.IsDeletedTNCN as IsDeletedTNCN
                                                     FROM TIEUTHU as tt 
                                                     LEFT JOIN  KHACHHANG as kh ON tt.IDKH = kh.IDKH
                                                     LEFT JOIN KHUVUC as kv ON kv.MAKV = kh.MAKV
                                                     LEFT JOIN DongMoNuocOnline as dmno ON dmno.IDKH = tt.IDKH
-                                                    LEFT JOIN DUONGPHO as dp ON dp.MADP = kh.MADP" + 
+                                                    LEFT JOIN DUONGPHO as dp ON dp.MADP = kh.MADP" +
                                                         @" WHERE tt.HETNO = 0 
 	                                                AND tt.TONGTIEN > 0
 	                                                AND tt.NAM = " + dieuKienLoc.NamHd
@@ -848,6 +850,7 @@ namespace EOSCRM.Dao
                                                         + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
                                                         + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
                                                         + " AND dmno.PathThongBao_TNCN IS NULL"
+                                                        + " AND dmno.ManagerDuyetTNCN IS NULL"
                                                         + " ORDER BY tt.NGAYNHAPCS DESC"
                                                         )
                                             .Select(x => new KhConNo
@@ -863,7 +866,76 @@ namespace EOSCRM.Dao
                                                 DiaChi = x.DiaChi,
                                                 TongTien = x.TongTien,
                                                 SoDienThoai = x.SoDienThoai,
-                                                XNCN = x.XNCN
+                                                XNCN = x.XNCN,
+                                                ManagerDuyetTNCN = x.ManagerDuyetTNCN == null ? "GDXN CHƯA PHÊ DUYỆT" :"GDXN ĐÃ PHÊ DUYỆT",
+                                                LabelHuyPheDuyet = x.IsDeletedTNCN == null || x.IsDeletedTNCN == false ? "Hủy phê duyệt" : "",
+                                                LabelBoHuyPheDuyet = x.IsDeletedTNCN != null && x.IsDeletedTNCN == true ? "Bỏ hủy phê duyệt" : ""
+                                            })
+                                            .ToList();
+
+
+                return ListResult;
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return null;
+            }
+        }
+        public List<KhConNo> GetKH_TNCN_To_Manager_PheDuyet(DieuKienLoc dieuKienLoc)
+        {
+            try
+            {
+
+                var ListResult = _db.ExecuteQuery<KhConNo>(@"
+                                                 SELECT
+                                                        tt.IDKH as Idkh,
+			                                            tt.TENKH as TenKH,
+			                                            tt.NAM as Nam,
+			                                            tt.THANG as Ky,
+			                                            tt.M3TINHTIEN as M3TinhTien,
+			                                            tt.NGAYNHAPCS as NgayNhapCS,
+                                                        tt.TONGTIEN as TongTien,
+                                                        kh.DIDONG1 as SoDienThoai,
+                                                        dmno.IsDeletedTNCN as IsDeletedTNCN,
+			                                            kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi,
+                                                        dmno.ManagerDuyetTNCN as ManagerDuyetTNCN
+                                                    FROM TIEUTHU as tt 
+                                                    LEFT JOIN  KHACHHANG as kh ON tt.IDKH = kh.IDKH
+                                                    LEFT JOIN KHUVUC as kv ON kv.MAKV = kh.MAKV
+                                                    LEFT JOIN DUONGPHO as dp ON dp.MADP = kh.MADP
+                                                    LEFT JOIN DongMoNuocOnline as dmno ON tt.IDKH = dmno.IDKH AND tt.THANG = dmno.THANG AND tt.NAM = dmno.NAM" +
+                                                        @" WHERE tt.HETNO = 0 
+	                                                AND tt.TONGTIEN > 0
+                                                    AND dmno.LeaderDuyetTNCN IS NOT NULL
+	                                                AND tt.NAM = " + dieuKienLoc.NamHd
+                                                        + " AND tt.THANG = " + dieuKienLoc.KyHd
+                                                        + (dieuKienLoc.XNCN != null ? " AND kv.TENHIEU = N'" + dieuKienLoc.XNCN + "'" : "")
+                                                        + (dieuKienLoc.Idkh != null ? " AND tt.IDKH = " + "'" + dieuKienLoc.Idkh + "'" : "")
+                                                        + (dieuKienLoc.MaDuongPho != null ? " AND dp.TENDP LIKE " + "N'%" + dieuKienLoc.MaDuongPho + "%'" : "")
+                                                        + (dieuKienLoc.KhuVuc != null ? " AND kv.MAKV IN " + "(" + dieuKienLoc.KhuVuc + ")" : "")
+                                                        + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
+                                                        + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
+                                                        + " ORDER BY tt.NGAYNHAPCS DESC"
+                                                        )
+                                            .Select(x => new KhConNo
+                                            {
+                                                Idkh = x.Idkh,
+                                                TenKH = x.TenKH,
+                                                Nam = x.Nam,
+                                                Ky = x.Ky,
+                                                M3TinhTien = x.M3TinhTien,
+                                                NgayNhapCS = x.NgayNhapCS,
+                                                NgayNhapCSStr = x.NgayNhapCS.ToString("dd/MM/yyyy"),
+                                                NgayThongBaoNhacNoStr = x.NgayNhapCS.AddDays((double)ThongTinQuyTrinh.HanThanhToanQH_2).ToString("dd/MM/yyyy"),
+                                                DiaChi = x.DiaChi,
+                                                TongTien = x.TongTien,
+                                                SoDienThoai = x.SoDienThoai,
+                                                IsDeletedTNCN = x.IsDeletedTNCN,
+                                                ManagerDuyetTNCN = x.ManagerDuyetTNCN != null ? "GDXN ĐÃ PHÊ DUYỆT" : "GDXN CHƯA PHÊ DUYỆT",
+                                                LabelHuyPheDuyet = x.IsDeletedTNCN == null || x.IsDeletedTBQH2 == false ? "Hủy phê duyệt" : "",
+                                                LabelKySoTNCN = x.ManagerDuyetTNCN == null ? "Duyệt TNCN" : ""
                                             })
                                             .ToList();
 
@@ -1010,6 +1082,122 @@ namespace EOSCRM.Dao
             }
             return "200";
         }
+        public int LeaderPheDuyetThongBaoTamNgungCapNuoc(DieuKienLoc dieuKienLoc, string nguoiPheDuyet)
+        {
+            var listIdkh = dieuKienLoc.ListIDKH;
+            if (!dieuKienLoc.isGetAll)
+            {
+                if (listIdkh.Count() > 0)
+                {
+                    for (var i = 0; i < listIdkh.Count(); i++)
+                    {
+                        try
+                        {
+                            //                        _db.ExecuteCommand(String.Format(@"INSERT INTO DongMoNuocOnline(NAM, THANG, IDKH, STATUS_DMNO, NV_Duyet_TBQHTN_1, NGAY_TBQHTN_2)
+                            //                                                        SELECT '{0}', '{1}', '{2}', '{3}', '{4}', '{5}'
+                            //                                                        WHERE NOT EXISTS(
+                            //                                                            SELECT 1 FROM DongMoNuocOnline WHERE NAM = '{0}' AND THANG = '{1}' AND IDKH = '{2}'
+                            //                                                        )", dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], TBQH_1, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd")));
+                            //                        _db.ExecuteCommand(String.Format(@"MERGE INTO [DongMoNuocOnline] AS target
+                            //                                                            USING (SELECT '{0}' AS NAM, '{1}' AS THANG, '{2}' AS IDKH) AS source
+                            //                                                            ON (target.NAM = source.NAM AND target.THANG = source.THANG AND target.IDKH = source.IDKH)
+                            //                                                            WHEN MATCHED THEN UPDATE SET target.STATUS_DMNO= '{3}', target.IsDeletedTBQH2 = NULL, target.LeaderDuyetTBQH2 = '{4}'
+                            //                                                            WHEN NOT MATCHED THEN INSERT (NAM, THANG, IDKH, STATUS_DMNO, LeaderDuyetTBQH2, NGAY_TBQHTN_2) 
+                            //                                                            VALUES (source.NAM, source.THANG, source.IDKH, '{3}', '{4}', '{5}');",
+                            //                                                             dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], TBQH_2, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd")));
+                            _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, LeaderDuyetTNCN='{2}' 
+                                                           WHERE NAM = {3} AND THANG = {4} AND IDKH = '{5}' AND ManagerDuyetTNCN IS NULL AND IsDeletedTNCN IS NULL
+                                                           AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
+                                                           TBTNCN, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
+
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+
+                    }
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            else
+            {
+                try
+                {
+                    _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, LeaderDuyetTNCN='{2}' 
+                                                           WHERE NAM = {3} AND THANG = {4} AND XNCN = N'{5}' AND ManagerDuyetTNCN IS NULL AND IsDeletedTNCN IS NULL
+                                                           AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
+                                                              TBTNCN, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN, dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+
+            }
+
+            return 200;
+        }
+        public int ManagerPheDuyetThongBaoTamNgungCapNuoc(DieuKienLoc dieuKienLoc, string nguoiPheDuyet)
+        {
+            var listIdkh = dieuKienLoc.ListIDKH;
+            if (!dieuKienLoc.isGetAll)
+            {
+                if (listIdkh.Count() > 0)
+                {
+                    for (var i = 0; i < listIdkh.Count(); i++)
+                    {
+                        try
+                        {
+                            //                        _db.ExecuteCommand(String.Format(@"INSERT INTO DongMoNuocOnline(NAM, THANG, IDKH, STATUS_DMNO, NV_Duyet_TBQHTN_1, NGAY_TBQHTN_2)
+                            //                                                        SELECT '{0}', '{1}', '{2}', '{3}', '{4}', '{5}'
+                            //                                                        WHERE NOT EXISTS(
+                            //                                                            SELECT 1 FROM DongMoNuocOnline WHERE NAM = '{0}' AND THANG = '{1}' AND IDKH = '{2}'
+                            //                                                        )", dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], TBQH_1, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd")));
+                            //                        _db.ExecuteCommand(String.Format(@"MERGE INTO [DongMoNuocOnline] AS target
+                            //                                                            USING (SELECT '{0}' AS NAM, '{1}' AS THANG, '{2}' AS IDKH) AS source
+                            //                                                            ON (target.NAM = source.NAM AND target.THANG = source.THANG AND target.IDKH = source.IDKH)
+                            //                                                            WHEN MATCHED THEN UPDATE SET target.STATUS_DMNO= '{3}', target.IsDeletedTBQH2 = NULL, target.ManagerDuyetTBQH2 = '{4}'
+                            //                                                            WHEN NOT MATCHED THEN INSERT (NAM, THANG, IDKH, STATUS_DMNO, ManagerDuyetTBQH2, NGAY_TBQHTN_2) 
+                            //                                                            VALUES (source.NAM, source.THANG, source.IDKH, '{3}', '{4}', '{5}');",
+                            //                                                             dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], TBQH_2, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd")));
+                            _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, ManagerDuyetTNCN='{2}' 
+                                                           WHERE NAM = {3} AND THANG = {4} AND IDKH = '{5}' AND LeaderDuyetTNCN IS NOT NULL
+                                                            AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
+                                                               TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTBQHTT_2));
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+
+                    }
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            else
+            {
+                try
+                {
+                    _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, ManagerDuyetTNCN='{2}'
+                                                    WHERE NAM = {3} AND THANG = {4} AND XNCN = N'{5}' AND LeaderDuyetTNCN IS NOT NULL
+                                                    AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
+                                                       TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN, dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTBQHTT_2));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+
+            return 200;
+        }
         public int UpdateGiayThongBaoDaKyDuyet(KhConNo khConNo, string nguoiPheDuyet, string base64DaKy)
         {
             try
@@ -1018,8 +1206,8 @@ namespace EOSCRM.Dao
                 _db.ExecuteCommand(String.Format(@"MERGE INTO [DongMoNuocOnline] AS target
                                                             USING (SELECT '{0}' AS NAM, '{1}' AS THANG, '{2}' AS IDKH) AS source
                                                             ON (target.NAM = source.NAM AND target.THANG = source.THANG AND target.IDKH = source.IDKH)
-                                                            WHEN MATCHED THEN UPDATE SET target.STATUS_DMNO= '{3}', PathThongBao_TNCN = '{6}', NV_Duyet_TNCN = '{4}', NGAY_TNCN='{5}'
-                                                            WHEN NOT MATCHED THEN INSERT (NAM, THANG, IDKH, STATUS_DMNO, NV_Duyet_TNCN, NGAY_TNCN, PathThongBao_TNCN) 
+                                                            WHEN MATCHED THEN UPDATE SET target.STATUS_DMNO= '{3}', PathThongBao_TNCN = '{6}', ManagerDuyetTNCN = '{4}', NGAY_TNCN='{5}'
+                                                            WHEN NOT MATCHED THEN INSERT (NAM, THANG, IDKH, STATUS_DMNO, ManagerDuyetTNCN, NGAY_TNCN, PathThongBao_TNCN) 
                                                             VALUES (source.NAM, source.THANG, source.IDKH, '{3}', '{4}', '{5}', '{6}');",
                                                             khConNo.Nam, khConNo.Ky, khConNo.Idkh, TBTNCN, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd"), pathTBTNCN));
             }
@@ -1063,6 +1251,7 @@ namespace EOSCRM.Dao
                                                         + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
                                                         + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
                                                         + " AND dmno.PathThongBao_TNCN IS NOT NULL"
+                                                        + " AND dmno.ManagerDuyetTNCN IS NOT NULL"
                                                         + " ORDER BY tt.NGAYNHAPCS DESC"
                                                         )
                                             .Select(x => new KhConNo
@@ -1128,7 +1317,7 @@ namespace EOSCRM.Dao
                                             JOIN KHUVUC as kv ON kv.MAKV = kh.MAKV
                                             JOIN DUONGPHO as dp ON dp.MADP = kh.MADP
                                             AND dmno.NGAY_TNCN IS NOT NULL
-                                            AND dmno.NV_Duyet_TNCN IS NOT NULL
+                                            AND dmno.ManagerDuyetTNCN IS NOT NULL
                                             AND dmno.PathThongBao_TNCN IS NOT NULL
                                             AND tt.NAM = " + dieuKienLoc.NamHd
                                             + " AND tt.THANG = " + dieuKienLoc.KyHd
@@ -1173,7 +1362,7 @@ namespace EOSCRM.Dao
                                             JOIN KHUVUC as kv ON kv.MAKV = kh.MAKV
                                             JOIN DUONGPHO as dp ON dp.MADP = kh.MADP
                                             AND dmno.NGAY_TNCN IS NOT NULL
-                                            AND dmno.NV_Duyet_TNCN IS NOT NULL
+                                            AND dmno.ManagerDuyetTNCN IS NOT NULL
                                             AND dmno.PathThongBao_TNCN IS NOT NULL
                                             AND tt.NAM = " + dieuKienLoc.NamHd
                                             + " AND tt.THANG = " + dieuKienLoc.KyHd
@@ -1218,6 +1407,99 @@ namespace EOSCRM.Dao
                 listStr.Add(listBase64[i].base64GiayTB);
             }
             return GhepBase64ToPDF(listStr);
+        }
+        public int Leader_HuyPheDuyetTNCN(DieuKienLoc dieuKienLoc)
+        {
+            var listIdkh = dieuKienLoc.ListIDKH;
+            if (listIdkh.Count() > 0)
+            {
+                for (var i = 0; i < listIdkh.Count(); i++)
+                {
+                    try
+                    {
+                        _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET IsDeletedTNCN = 1, LeaderDuyetTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND IDKH = '{2}' AND ManagerDuyetTNCN IS NULL",
+                                                           dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i]));
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception();
+                    }
+
+                }
+            }
+            else
+            {
+                return 0;
+            }
+            return 200;
+        }
+        public int Manager_HuyPheDuyetTNCN(DieuKienLoc dieuKienLoc)
+        {
+            var listIdkh = dieuKienLoc.ListIDKH;
+            //huy hang loat
+            if (dieuKienLoc.isGetAll)
+            {
+                try
+                {
+                    _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET ManagerDuyetTNCN = NULL, LeaderDuyetTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND XNCN = N'{2}'",
+                                                       dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+            //huy chi dinh tung khach hang
+            else
+            {
+                if (listIdkh.Count() > 0)
+                {
+                    for (var i = 0; i < listIdkh.Count(); i++)
+                    {
+                        try
+                        {
+                            _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET ManagerDuyetTNCN = NULL, LeaderDuyetTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND IDKH = {2}",
+                                                               dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i]));
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+
+                    }
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+
+            return 200;
+        }
+        public int Leader_Bo_HuyPheDuyetTNCN(DieuKienLoc dieuKienLoc)
+        {
+            var listIdkh = dieuKienLoc.ListIDKH;
+            if (listIdkh.Count() > 0)
+            {
+                for (var i = 0; i < listIdkh.Count(); i++)
+                {
+                    try
+                    {
+                        _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET IsDeletedTNCN = NULL, LeaderDuyetTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND IDKH = {2} AND IsDeletedTNCN = 1",
+                                                           dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i]));
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception();
+                    }
+
+                }
+            }
+            else
+            {
+                return 0;
+            }
+            return 200;
         }
         #endregion
 
@@ -2107,9 +2389,12 @@ namespace EOSCRM.Dao
         public int totalKh { get; set; }
         public double totalPage { get; set; }
         public bool? IsDeletedTBQH2 { get; set; }
+        public bool? IsDeletedTNCN { get; set; }
         public string ManagerDuyetTBQH2 { get; set; }
+        public string ManagerDuyetTNCN { get; set; }
         public string LabelHuyPheDuyet { get; set; }
         public string LabelBoHuyPheDuyet { get; set; }
+        public string LabelKySoTNCN { get; set; }
         public string LeaderPheDuyet { get; set; }
     }
     public class TNCN
