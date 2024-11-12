@@ -384,6 +384,12 @@
                             </ItemTemplate>
                         </asp:TemplateField>
 
+                        <asp:TemplateField HeaderText="Trạng thái" HeaderStyle-Width="80px">
+                            <ItemTemplate>
+                                <%# Eval("LeaderPheDuyetTNCN")%>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
                         <asp:TemplateField HeaderText="" HeaderStyle-Width="80px">
                             <ItemTemplate>
                                <a id="huyPheDuyetBtn-<%# Eval("Idkh") %>" href="#" onclick="huyPheDuyetTNCN('<%# Eval("Idkh") %>')"><%# Eval("LabelHuyPheDuyet") %></a>

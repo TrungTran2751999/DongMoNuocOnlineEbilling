@@ -832,7 +832,7 @@ namespace EOSCRM.Dao
                                                         kh.DIDONG1 as SoDienThoai,
 			                                            kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi,
                                                         kv.TENHIEU as XNCN,
-                                                        dmno.ManagerDuyetTNCN as ManagerDuyetTNCN,
+                                                        dmno.LeaderDuyetTNCN as LeaderPheDuyetTNCN,
                                                         dmno.IsDeletedTNCN as IsDeletedTNCN
                                                     FROM TIEUTHU as tt 
                                                     LEFT JOIN  KHACHHANG as kh ON tt.IDKH = kh.IDKH
@@ -867,7 +867,7 @@ namespace EOSCRM.Dao
                                                 TongTien = x.TongTien,
                                                 SoDienThoai = x.SoDienThoai,
                                                 XNCN = x.XNCN,
-                                                ManagerDuyetTNCN = x.ManagerDuyetTNCN == null ? "GDXN CHƯA PHÊ DUYỆT" :"GDXN ĐÃ PHÊ DUYỆT",
+                                                LeaderPheDuyetTNCN = x.LeaderPheDuyetTNCN == null ? "CHƯA TRÌNH" : "ĐÃ TRÌNH",
                                                 LabelHuyPheDuyet = x.IsDeletedTNCN == null || x.IsDeletedTNCN == false ? "Hủy phê duyệt" : "",
                                                 LabelBoHuyPheDuyet = x.IsDeletedTNCN != null && x.IsDeletedTNCN == true ? "Bỏ hủy phê duyệt" : ""
                                             })
@@ -900,7 +900,8 @@ namespace EOSCRM.Dao
                                                         kh.DIDONG1 as SoDienThoai,
                                                         dmno.IsDeletedTNCN as IsDeletedTNCN,
 			                                            kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi,
-                                                        dmno.ManagerDuyetTNCN as ManagerDuyetTNCN
+                                                        dmno.ManagerDuyetTNCN as ManagerDuyetTNCN,
+                                                        dmno.PathThongBao_TNCN as PathThongBao_TNCN
                                                     FROM TIEUTHU as tt 
                                                     LEFT JOIN  KHACHHANG as kh ON tt.IDKH = kh.IDKH
                                                     LEFT JOIN KHUVUC as kv ON kv.MAKV = kh.MAKV
@@ -935,7 +936,7 @@ namespace EOSCRM.Dao
                                                 IsDeletedTNCN = x.IsDeletedTNCN,
                                                 ManagerDuyetTNCN = x.ManagerDuyetTNCN != null ? "GDXN ĐÃ PHÊ DUYỆT" : "GDXN CHƯA PHÊ DUYỆT",
                                                 LabelHuyPheDuyet = x.IsDeletedTNCN == null || x.IsDeletedTBQH2 == false ? "Hủy phê duyệt" : "",
-                                                LabelKySoTNCN = x.ManagerDuyetTNCN == null ? "Duyệt TNCN" : ""
+                                                LabelKySoTNCN = x.PathThongBao_TNCN == null ? "Ký số duyệt TNCN" : ""
                                             })
                                             .ToList();
 
@@ -1167,7 +1168,7 @@ namespace EOSCRM.Dao
                             _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, ManagerDuyetTNCN='{2}' 
                                                            WHERE NAM = {3} AND THANG = {4} AND IDKH = '{5}' AND LeaderDuyetTNCN IS NOT NULL
                                                             AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
-                                                               TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTBQHTT_2));
+                                                               TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
                         }
                         catch (Exception e)
                         {
@@ -1188,7 +1189,7 @@ namespace EOSCRM.Dao
                     _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, ManagerDuyetTNCN='{2}'
                                                     WHERE NAM = {3} AND THANG = {4} AND XNCN = N'{5}' AND LeaderDuyetTNCN IS NOT NULL
                                                     AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
-                                                       TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN, dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTBQHTT_2));
+                                                       TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN, dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
                 }
                 catch (Exception e)
                 {
@@ -1441,7 +1442,7 @@ namespace EOSCRM.Dao
             {
                 try
                 {
-                    _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET ManagerDuyetTNCN = NULL, LeaderDuyetTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND XNCN = N'{2}'",
+                    _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET ManagerDuyetTNCN = NULL, PathThongBao_TNCN = NULL, LeaderDuyetTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND XNCN = N'{2}'",
                                                        dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN));
                 }
                 catch (Exception e)
@@ -1458,7 +1459,7 @@ namespace EOSCRM.Dao
                     {
                         try
                         {
-                            _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET ManagerDuyetTNCN = NULL, LeaderDuyetTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND IDKH = {2}",
+                            _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET ManagerDuyetTNCN = NULL, PathThongBao_TNCN = NULL, LeaderDuyetTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND IDKH = {2}",
                                                                dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i]));
                         }
                         catch (Exception e)
@@ -1557,13 +1558,15 @@ namespace EOSCRM.Dao
             var fileName = @"TNCN-" + khConNo.Idkh + "-" + khConNo.Ky + "-" + khConNo.Nam + ".pdf";
             var saveFile = thangFolder + fileName;
             var bytePdf = Convert.FromBase64String(base64Str);
-            if (!File.Exists(saveFile))
+
+            if (File.Exists(saveFile))
             {
-                FileStream stream = new FileStream(saveFile, FileMode.CreateNew);
-                BinaryWriter writer = new BinaryWriter(stream);
-                writer.Write(bytePdf, 0, bytePdf.Length);
-                writer.Close();
+                File.Delete(saveFile);
             }
+            FileStream stream = new FileStream(saveFile, FileMode.CreateNew);
+            BinaryWriter writer = new BinaryWriter(stream);
+            writer.Write(bytePdf, 0, bytePdf.Length);
+            writer.Close();
             return "\\TNCN\\" + khConNo.Nam + "\\" + khConNo.Ky + "\\" + fileName;
         }
         public List<LoTrinh> GetAllLoTrinh()
@@ -2392,10 +2395,12 @@ namespace EOSCRM.Dao
         public bool? IsDeletedTNCN { get; set; }
         public string ManagerDuyetTBQH2 { get; set; }
         public string ManagerDuyetTNCN { get; set; }
+        public string LeaderPheDuyetTNCN { get; set; }
         public string LabelHuyPheDuyet { get; set; }
         public string LabelBoHuyPheDuyet { get; set; }
         public string LabelKySoTNCN { get; set; }
         public string LeaderPheDuyet { get; set; }
+        public string PathThongBao_TNCN { get; set; }
     }
     public class TNCN
     {

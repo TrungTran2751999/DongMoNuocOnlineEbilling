@@ -401,6 +401,12 @@
                                 id="<%#Eval("Idkh")%>-<%#Eval("Nam")%>-<%#Eval("Ky")%>"><%#Eval("LabelKySoTNCN") %></a>
                             </ItemTemplate>
                         </asp:TemplateField>
+
+                        <asp:TemplateField HeaderText="" HeaderStyle-Width="80px">
+                            <ItemTemplate>
+                               <%#Eval("ManagerDuyetTNCN")%>
+                            </ItemTemplate>
+                        </asp:TemplateField>
                     </Columns>
                 </eoscrm:Grid>
             </div>
@@ -414,8 +420,8 @@
         </div>
     </div>
     <div id="loginvnpt">
-       <input class="form-control" id="userName-vnpt" type="text" style="border: 1px solid black; width:100%; margin-bottom:20px" placeholder="Tài khoản VNPT Ca" value="046060004338"/>
-       <input class="form-control" id="password-vnpt" type="password" style="border: 1px solid black; width:100%; margin-bottom:20px" placeholder="Mật khẩu VNPT Ca" value="Bom753159."/>
+       <input class="form-control" id="userName-vnpt" type="text" style="border: 1px solid black; width:100%; margin-bottom:20px" placeholder="Tài khoản VNPT Ca" value=""/>
+       <input class="form-control" id="password-vnpt" type="password" style="border: 1px solid black; width:100%; margin-bottom:20px" placeholder="Mật khẩu VNPT Ca" value=""/>
        <button class="form-control" onclick="loginVnptHash()" id="submitVnpt" style="margin-bottom:20px; width:100%">Đăng nhập</button>
     </div>
     <script src="../../content/scripts/exportExel.js"></script>
@@ -512,7 +518,7 @@
                 }
             )
             return $.ajax({
-                url: "/Forms/DongMoNuocOnline/Leader_DuyetTNCN.aspx/PheDuyetTNCN",
+                url: "/Forms/DongMoNuocOnline/Manager_DuyetTNCN.aspx/PheDuyetTNCN",
                 type: "POST",
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -598,6 +604,7 @@
                 NgayNhapCSStr: ngayNhap
             }
             khConNoObj = khConNo;
+            
             //callApiTBTNCN(khConNo)
             //.done(function (res) {
             //    closeWaitingDialog();
@@ -749,13 +756,32 @@
                 listIdBoHuyTNCN = []
             })
         }
-        
+        if(localStorage.getItem("keyUser")){
+            let value = localStorage.getItem("keyUser")
+            $("#userName-vnpt").val(value)
+        }
+        if(localStorage.getItem("keyPass")){
+            let value = localStorage.getItem("keyPass")
+            $("#password-vnpt").val(value)
+        }
         function loginVnptHash() {
             let obj = {
                 UserName: $("#userName-vnpt").val(),
                 Password: $("#password-vnpt").val()
             }
+
             openWaitingDialog();
+            let userVal = $("#userName-vnpt").val();
+            let passVal = $("#password-vnpt").val();
+            let user = localStorage.getItem("keyUser");
+            let password = localStorage.getItem("keyPass");
+            
+            if(!user || user!=userVal){
+                localStorage.setItem("keyUser", userVal)
+            }
+            if(!password || passVal!=password){
+                localStorage.setItem("keyPass", passVal)
+            }
             $("#loginvnpt").dialog("close");
             $.ajax({
                 url: "/Forms/DongMoNuocOnline/DuyetTNCN.aspx/LoginVnpt",
