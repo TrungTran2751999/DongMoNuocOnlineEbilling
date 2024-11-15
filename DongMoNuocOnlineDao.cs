@@ -22,6 +22,7 @@ using System.Data;
 using System.Net;
 using RestSharp;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace EOSCRM.Dao
 {
@@ -33,7 +34,8 @@ namespace EOSCRM.Dao
         public readonly string TBQH_2 = "TBQH_2";
         public readonly string TBTNCN = "TBTNCN";
         public readonly int totalPage = 1000;
-        public readonly string rootFolder = "E:\\EbillingDongMoNuoc\\SourceCode\\EOSCRM.Web\\ThongBaos"; 
+        public readonly string rootFolder = "E:\\EbillingDongMoNuoc\\SourceCode\\EOSCRM.Web\\ThongBaos";
+        public readonly string domainAPI = "https://localhost:44311/";
 
         #region Giai đoạn nhắc nợ
         public List<KhConNo> GetKH_TB_NhacNo(DieuKienLoc dieuKienLoc)
@@ -702,23 +704,46 @@ namespace EOSCRM.Dao
             return new List<KhConNo>();
            
         }
+        //public string GetAllGiayThongBaoQuaHan2_PDF(List<KhConNo> listKhConNo, DieuKienLoc dieuKienLoc)
+        //{
+        //    var listStr = new List<string>();
+
+
+        //    //var gdxn = GetChuKiGDXN(listKhConNo[0].XNCN);
+        //    //for (int i = 0; i < listKhConNo.Count(); i++)
+        //    //{
+        //    //    listStr.Add(SetGiayThongBaoQuaHan2(listKhConNo[i], gdxn));
+        //    //}
+
+        //    var listBase64 = GetAllGiayThongBaoQuaHan2_V2(listKhConNo, dieuKienLoc);
+        //    for (int i = 0; i < listBase64.Count(); i++)
+        //    {
+        //        listStr.Add(listBase64[i].base64GiayTB);
+        //    }
+        //    return GhepBase64ToPDF(listStr);
+        //}
+
         public string GetAllGiayThongBaoQuaHan2_PDF(List<KhConNo> listKhConNo, DieuKienLoc dieuKienLoc)
         {
-            var listStr = new List<string>();
-            
-           
-            //var gdxn = GetChuKiGDXN(listKhConNo[0].XNCN);
-            //for (int i = 0; i < listKhConNo.Count(); i++)
-            //{
-            //    listStr.Add(SetGiayThongBaoQuaHan2(listKhConNo[i], gdxn));
-            //}
-
-            var listBase64 = GetAllGiayThongBaoQuaHan2_V2(listKhConNo, dieuKienLoc);
-            for (int i = 0; i < listBase64.Count(); i++)
+            var client = new RestClient(domainAPI + "api/tb/tbqh2");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("Content-Type", "application/json");
+            var body = new
             {
-                listStr.Add(listBase64[i].base64GiayTB);
+                ListKHConNo = listKhConNo,
+                DieuKienLoc = dieuKienLoc
+            };
+            request.AddJsonBody(body);
+            IRestResponse response = client.Execute(request);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                return JsonConvert.DeserializeObject<string>(response.Content); 
             }
-            return GhepBase64ToPDF(listStr);
+            else
+            {
+                Console.WriteLine(response.ErrorMessage);
+                return null;
+            }
         }
         public int Leader_HuyPheDuyetTBQH2(DieuKienLoc dieuKienLoc)
         {
@@ -849,7 +874,7 @@ namespace EOSCRM.Dao
                                                         + (dieuKienLoc.KhuVuc != null ? " AND kv.MAKV IN " + "(" + dieuKienLoc.KhuVuc + ")" : "")
                                                         + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
                                                         + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
-                                                        + " AND dmno.PathThongBao_TNCN IS NULL"
+                                                        + " AND dmno.PathThongBao_TNCN IS NOT NULL"
                                                         + " AND dmno.ManagerDuyetTNCN IS NULL"
                                                         + " ORDER BY tt.NGAYNHAPCS DESC"
                                                         )
@@ -899,6 +924,7 @@ namespace EOSCRM.Dao
                                                         tt.TONGTIEN as TongTien,
                                                         kh.DIDONG1 as SoDienThoai,
                                                         dmno.IsDeletedTNCN as IsDeletedTNCN,
+                                                        dmno.IsKySoTNCN as IsKySoTNCN,
 			                                            kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi,
                                                         dmno.ManagerDuyetTNCN as ManagerDuyetTNCN,
                                                         dmno.PathThongBao_TNCN as PathThongBao_TNCN
@@ -936,7 +962,7 @@ namespace EOSCRM.Dao
                                                 IsDeletedTNCN = x.IsDeletedTNCN,
                                                 ManagerDuyetTNCN = x.ManagerDuyetTNCN != null ? "GDXN ĐÃ PHÊ DUYỆT" : "GDXN CHƯA PHÊ DUYỆT",
                                                 LabelHuyPheDuyet = x.IsDeletedTNCN == null || x.IsDeletedTBQH2 == false ? "Hủy phê duyệt" : "",
-                                                LabelKySoTNCN = x.PathThongBao_TNCN == null ? "Ký số duyệt TNCN" : ""
+                                                LabelKySoTNCN = x.IsKySoTNCN == null || x.IsKySoTNCN == false ? "Ký số duyệt TNCN" : ""
                                             })
                                             .ToList();
 
@@ -1107,7 +1133,7 @@ namespace EOSCRM.Dao
                             //                                                            VALUES (source.NAM, source.THANG, source.IDKH, '{3}', '{4}', '{5}');",
                             //                                                             dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], TBQH_2, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd")));
                             _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, LeaderDuyetTNCN='{2}' 
-                                                           WHERE NAM = {3} AND THANG = {4} AND IDKH = '{5}' AND ManagerDuyetTNCN IS NULL AND IsDeletedTNCN IS NULL
+                                                           WHERE NAM = {3} AND THANG = {4} AND IDKH = '{5}' AND ManagerDuyetTNCN IS NULL AND IsDeletedTNCN IS NULL AND PathThongBao_TNCN IS NOT NULL
                                                            AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
                                                            TBTNCN, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
 
@@ -1129,7 +1155,7 @@ namespace EOSCRM.Dao
                 try
                 {
                     _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, LeaderDuyetTNCN='{2}' 
-                                                           WHERE NAM = {3} AND THANG = {4} AND XNCN = N'{5}' AND ManagerDuyetTNCN IS NULL AND IsDeletedTNCN IS NULL
+                                                           WHERE NAM = {3} AND THANG = {4} AND XNCN = N'{5}' AND ManagerDuyetTNCN IS NULL AND IsDeletedTNCN IS NULL AND PathThongBao_TNCN IS NOT NULL
                                                            AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
                                                               TBTNCN, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN, dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
                 }
@@ -1168,7 +1194,7 @@ namespace EOSCRM.Dao
                             _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, ManagerDuyetTNCN='{2}' 
                                                            WHERE NAM = {3} AND THANG = {4} AND IDKH = '{5}' AND LeaderDuyetTNCN IS NOT NULL
                                                             AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
-                                                               TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
+                                                               TBTNCN, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
                         }
                         catch (Exception e)
                         {
@@ -1189,7 +1215,7 @@ namespace EOSCRM.Dao
                     _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, ManagerDuyetTNCN='{2}'
                                                     WHERE NAM = {3} AND THANG = {4} AND XNCN = N'{5}' AND LeaderDuyetTNCN IS NOT NULL
                                                     AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
-                                                       TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN, dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
+                                                       TBTNCN, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN, dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
                 }
                 catch (Exception e)
                 {
@@ -1204,12 +1230,15 @@ namespace EOSCRM.Dao
             try
             {
                 var pathTBTNCN = SaveFile(khConNo, base64DaKy);
-                _db.ExecuteCommand(String.Format(@"MERGE INTO [DongMoNuocOnline] AS target
-                                                            USING (SELECT '{0}' AS NAM, '{1}' AS THANG, '{2}' AS IDKH) AS source
-                                                            ON (target.NAM = source.NAM AND target.THANG = source.THANG AND target.IDKH = source.IDKH)
-                                                            WHEN MATCHED THEN UPDATE SET target.STATUS_DMNO= '{3}', PathThongBao_TNCN = '{6}', ManagerDuyetTNCN = '{4}', NGAY_TNCN='{5}'
-                                                            WHEN NOT MATCHED THEN INSERT (NAM, THANG, IDKH, STATUS_DMNO, ManagerDuyetTNCN, NGAY_TNCN, PathThongBao_TNCN) 
-                                                            VALUES (source.NAM, source.THANG, source.IDKH, '{3}', '{4}', '{5}', '{6}');",
+//                _db.ExecuteCommand(String.Format(@"MERGE INTO [DongMoNuocOnline] AS target
+//                                                            USING (SELECT '{0}' AS NAM, '{1}' AS THANG, '{2}' AS IDKH) AS source
+//                                                            ON (target.NAM = source.NAM AND target.THANG = source.THANG AND target.IDKH = source.IDKH)
+//                                                            WHEN MATCHED THEN UPDATE SET target.STATUS_DMNO= '{3}', PathThongBao_TNCN = '{6}', ManagerDuyetTNCN = '{4}', NGAY_TNCN='{5}', IsKySoTNCN = 1
+//                                                            WHEN NOT MATCHED THEN INSERT (NAM, THANG, IDKH, STATUS_DMNO, ManagerDuyetTNCN, NGAY_TNCN, PathThongBao_TNCN, IsKySoTNCN) 
+//                                                            VALUES (source.NAM, source.THANG, source.IDKH, '{3}', '{4}', '{5}', '{6}', 1);",
+//                                                            khConNo.Nam, khConNo.Ky, khConNo.Idkh, TBTNCN, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd"), pathTBTNCN));
+                _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO= '{3}', PathThongBao_TNCN = '{6}', ManagerDuyetTNCN = '{4}', NGAY_TNCN='{5}', IsKySoTNCN = 1
+                                                            WHERE NAM = {0} AND THANG = {1} AND IDKH = '{2}' AND STATUS_DMNO = '{3}' ;",
                                                             khConNo.Nam, khConNo.Ky, khConNo.Idkh, TBTNCN, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd"), pathTBTNCN));
             }
             catch(Exception e)
@@ -1391,23 +1420,44 @@ namespace EOSCRM.Dao
             return null;
 
         }
+        //public string GetAllGiayThongBaoTamNgungCapNuoc_PDF(List<KhConNo> listKhConNo, DieuKienLoc dieuKienLoc)
+        //{
+        //    var listStr = new List<string>();
+
+
+        //    //var gdxn = GetChuKiGDXN(listKhConNo[0].XNCN);
+        //    //for (int i = 0; i < listKhConNo.Count(); i++)
+        //    //{
+        //    //    listStr.Add(SetGiayThongBaoQuaHan2(listKhConNo[i], gdxn));
+        //    //}
+
+        //    var listBase64 = GetAllGiayThongBaoTamNgungCapNuoc(listKhConNo, dieuKienLoc);
+        //    for (int i = 0; i < listBase64.Count(); i++)
+        //    {
+        //        listStr.Add(listBase64[i].base64GiayTB);
+        //    }
+        //    return GhepBase64ToPDF(listStr);
+        //}
         public string GetAllGiayThongBaoTamNgungCapNuoc_PDF(List<KhConNo> listKhConNo, DieuKienLoc dieuKienLoc)
         {
-            var listStr = new List<string>();
-
-
-            //var gdxn = GetChuKiGDXN(listKhConNo[0].XNCN);
-            //for (int i = 0; i < listKhConNo.Count(); i++)
-            //{
-            //    listStr.Add(SetGiayThongBaoQuaHan2(listKhConNo[i], gdxn));
-            //}
-
-            var listBase64 = GetAllGiayThongBaoTamNgungCapNuoc(listKhConNo, dieuKienLoc);
-            for (int i = 0; i < listBase64.Count(); i++)
+            var client = new RestClient(domainAPI + "api/tb/tncn");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("Content-Type", "application/json");
+            var body = new
             {
-                listStr.Add(listBase64[i].base64GiayTB);
+                ListKHConNo = listKhConNo,
+                DieuKienLoc = dieuKienLoc
+            };
+            request.AddJsonBody(body);
+            IRestResponse response = client.Execute(request);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                return JsonConvert.DeserializeObject<string>(response.Content);
             }
-            return GhepBase64ToPDF(listStr);
+            else
+            {
+                return null;
+            }
         }
         public int Leader_HuyPheDuyetTNCN(DieuKienLoc dieuKienLoc)
         {
@@ -1442,7 +1492,7 @@ namespace EOSCRM.Dao
             {
                 try
                 {
-                    _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET ManagerDuyetTNCN = NULL, PathThongBao_TNCN = NULL, LeaderDuyetTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND XNCN = N'{2}'",
+                    _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET ManagerDuyetTNCN = NULL, LeaderDuyetTNCN = NULL, IsKySoTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND XNCN = N'{2}' AND STATUS_DMNO = 'TBTNCN'",
                                                        dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN));
                 }
                 catch (Exception e)
@@ -1459,7 +1509,7 @@ namespace EOSCRM.Dao
                     {
                         try
                         {
-                            _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET ManagerDuyetTNCN = NULL, PathThongBao_TNCN = NULL, LeaderDuyetTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND IDKH = {2}",
+                            _db.ExecuteCommand(String.Format(@"UPDATE [DongmoNuocOnline] SET ManagerDuyetTNCN = NULL, LeaderDuyetTNCN = NULL, IsKySoTNCN = NULL WHERE NAM = {0} AND THANG = {1} AND IDKH = {2} AND STATUS_DMNO = 'TBTNCN'",
                                                                dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i]));
                         }
                         catch (Exception e)
@@ -1543,31 +1593,53 @@ namespace EOSCRM.Dao
             var byteFile = File.ReadAllBytes(pathFolder);
             return Convert.ToBase64String(byteFile);
         }
+        //private string SaveFile(KhConNo khConNo, string base64Str)
+        //{
+        //    var yearFolder = rootFolder + "\\TNCN\\" + khConNo.Nam;
+        //    if (!Directory.Exists(yearFolder))
+        //    {
+        //        Directory.CreateDirectory(yearFolder);
+        //    }
+        //    var thangFolder = rootFolder + "\\TNCN\\" + khConNo.Nam + "\\" + khConNo.Ky+"\\";
+        //    if (!Directory.Exists(thangFolder))
+        //    {
+        //        Directory.CreateDirectory(thangFolder);
+        //    }
+        //    var fileName = @"TNCN-" + khConNo.Idkh + "-" + khConNo.Ky + "-" + khConNo.Nam + ".pdf";
+        //    var saveFile = thangFolder + fileName;
+        //    var bytePdf = Convert.FromBase64String(base64Str);
+
+        //    if (File.Exists(saveFile))
+        //    {
+        //        File.Delete(saveFile);
+        //    }
+        //    FileStream stream = new FileStream(saveFile, FileMode.CreateNew);
+        //    BinaryWriter writer = new BinaryWriter(stream);
+        //    writer.Write(bytePdf, 0, bytePdf.Length);
+        //    writer.Close();
+        //    return "\\TNCN\\" + khConNo.Nam + "\\" + khConNo.Ky + "\\" + fileName;
+        //}
+
         private string SaveFile(KhConNo khConNo, string base64Str)
         {
-            var yearFolder = rootFolder + "\\TNCN\\" + khConNo.Nam;
-            if (!Directory.Exists(yearFolder))
+            var client = new RestClient(domainAPI + "api/tb/save-ky-so");
+            var request = new RestRequest(Method.POST);
+            request.AddHeader("Content-Type", "application/json");
+            var body = new
             {
-                Directory.CreateDirectory(yearFolder);
-            }
-            var thangFolder = rootFolder + "\\TNCN\\" + khConNo.Nam + "\\" + khConNo.Ky+"\\";
-            if (!Directory.Exists(thangFolder))
+                KhConNo = khConNo,
+                Base64Str = base64Str
+            };
+            request.AddJsonBody(body);
+            IRestResponse response = client.Execute(request);
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-                Directory.CreateDirectory(thangFolder);
+                return JsonConvert.DeserializeObject<string>(response.Content);
             }
-            var fileName = @"TNCN-" + khConNo.Idkh + "-" + khConNo.Ky + "-" + khConNo.Nam + ".pdf";
-            var saveFile = thangFolder + fileName;
-            var bytePdf = Convert.FromBase64String(base64Str);
-
-            if (File.Exists(saveFile))
+            else
             {
-                File.Delete(saveFile);
+                return null;
             }
-            FileStream stream = new FileStream(saveFile, FileMode.CreateNew);
-            BinaryWriter writer = new BinaryWriter(stream);
-            writer.Write(bytePdf, 0, bytePdf.Length);
-            writer.Close();
-            return "\\TNCN\\" + khConNo.Nam + "\\" + khConNo.Ky + "\\" + fileName;
         }
         public List<LoTrinh> GetAllLoTrinh()
         {
@@ -2308,6 +2380,10 @@ namespace EOSCRM.Dao
             return ListTieuThu;
         }
     }
+    public class ThongBaoRes
+    {
+        public string d { get; set; }
+    }
     public class DieuKienLoc
     {
         public int KyHd { get; set; }
@@ -2401,6 +2477,7 @@ namespace EOSCRM.Dao
         public string LabelKySoTNCN { get; set; }
         public string LeaderPheDuyet { get; set; }
         public string PathThongBao_TNCN { get; set; }
+        public bool? IsKySoTNCN { get; set; }
     }
     public class TNCN
     {

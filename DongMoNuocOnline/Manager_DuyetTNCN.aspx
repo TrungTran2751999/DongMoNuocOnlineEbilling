@@ -327,10 +327,10 @@
                              <HeaderTemplate>
                                    <input id="chkAllTop" title="Chọn hết / Bỏ chọn hết" name="chkAllTop" type="checkbox" onclick="CheckAllItems(this);" />
                              </HeaderTemplate>
-                            <ItemTemplate>
+                            <%--<ItemTemplate>
                                    <input id="Id" runat="server" type="hidden" value='<%# Eval("Idkh") %>' />
                                    <input id="<%# Eval("Idkh") + new Random().Next(0,1000000).ToString() %>" type="checkbox" onchange="onSelectedCheckBox('<%# Eval("Idkh") %>', '<%# Eval("M3TinhTien") %>', '<%# Eval("TongTien") %>', this,  '<%# Eval("NgayThongBaoNhacNoStr") %>', '<%# Eval("SoDienThoai")??"" %>')" />
-                             </ItemTemplate>
+                             </ItemTemplate>--%>
                         </asp:TemplateField>
 
                         <asp:TemplateField HeaderText="STT" HeaderStyle-CssClass="checkbox">
@@ -404,7 +404,7 @@
 
                         <asp:TemplateField HeaderText="" HeaderStyle-Width="80px">
                             <ItemTemplate>
-                               <%#Eval("ManagerDuyetTNCN")%>
+                               <div id="status-<%#Eval("Idkh")%>-<%#Eval("Nam")%>-<%#Eval("Ky")%>"><%#Eval("ManagerDuyetTNCN")%></div>
                             </ItemTemplate>
                         </asp:TemplateField>
                     </Columns>
@@ -857,6 +857,7 @@
                 .done(function (res) {
                     let idDuyet = khConNoObj.Idkh + "-" + khConNoObj.Nam + "-" + khConNoObj.Ky
                     $("#" + idDuyet).remove()
+                    $("#status-"+idDuyet).text("GDXN ĐÃ PHÊ DUYỆT")//0000000000000000000000000000000000000000000000000000000000000000000000000
                     $("#pdf-container").dialog("close")
                     closeWaitingDialog()
             })
