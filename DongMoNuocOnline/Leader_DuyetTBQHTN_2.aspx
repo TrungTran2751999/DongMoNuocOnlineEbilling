@@ -204,6 +204,7 @@
         <ContentTemplate>
             <div class="crmcontainer" id="contNhacNo" runat="server" visible="false">  
                 <button id="btnNhacNoExcel" onclick="pheDuyetQuaHanLan2()">Duyệt thông báo quá hạn lần 2</button> 
+                <a href="../../content/template/mau_huy_phe_duyet_hang_loat.xlsx">Tải mẫu excel duyệt hàng loạt</a>
                 <label for="upload" style="float:right; background-color: #8181e3; color:white" class="custom-upload">
                     Tải lên file Excel để hủy phê duyệt hàng loạt 
                 </label>     

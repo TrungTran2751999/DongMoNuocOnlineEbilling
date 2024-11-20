@@ -35,7 +35,8 @@ namespace EOSCRM.Dao
         public readonly string TBTNCN = "TBTNCN";
         public readonly int totalPage = 1000;
         public readonly string rootFolder = "E:\\EbillingDongMoNuoc\\SourceCode\\EOSCRM.Web\\ThongBaos";
-        public readonly string domainAPI = "https://localhost:44311/";
+        public readonly string domainAPI = "http://192.168.0.15:6547/";
+        //public readonly string domainAPI = "https://localhost:44311/";
 
         #region Giai đoạn nhắc nợ
         public List<KhConNo> GetKH_TB_NhacNo(DieuKienLoc dieuKienLoc)
@@ -187,6 +188,7 @@ namespace EOSCRM.Dao
                                                         @" WHERE tt.HETNO = 0 
 	                                                AND tt.TONGTIEN > 0
                                                     AND dmno.ManagerDuyetTBQH2 IS NULL
+                                                    AND PathThongBao_TBQHTN_2 IS NOT NULL
 	                                                AND tt.NAM = " + dieuKienLoc.NamHd
                                                         + " AND tt.THANG = " + dieuKienLoc.KyHd
                                                         + (dieuKienLoc.XNCN != null ? " AND kv.TENHIEU = N'" + dieuKienLoc.XNCN + "'" : "")
@@ -253,6 +255,7 @@ namespace EOSCRM.Dao
                                                         @" WHERE tt.HETNO = 0 
 	                                                AND tt.TONGTIEN > 0
                                                     AND dmno.LeaderDuyetTBQH2 IS NOT NULL
+                                                    AND PathThongBao_TBQHTN_2 IS NOT NULL
 	                                                AND tt.NAM = " + dieuKienLoc.NamHd
                                                         + " AND tt.THANG = " + dieuKienLoc.KyHd
                                                         + (dieuKienLoc.XNCN != null ? " AND kv.TENHIEU = N'" + dieuKienLoc.XNCN + "'" : "")
@@ -317,6 +320,7 @@ namespace EOSCRM.Dao
                             //                                                             dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], TBQH_2, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd")));
                             _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTBQH2 = {1}, LeaderDuyetTBQH2='{2}' 
                                                            WHERE NAM = {3} AND THANG = {4} AND IDKH = '{5}' AND ManagerDuyetTBQH2 IS NULL AND IsDeletedTBQH2 IS NULL
+                                                           AND PathThongBao_TBQHTN_2 IS NOT NULL
                                                            AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
                                                            TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTBQHTT_2));
 
@@ -339,7 +343,7 @@ namespace EOSCRM.Dao
                 {
                     _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTBQH2 = {1}, LeaderDuyetTBQH2='{2}' 
                                                            WHERE NAM = {3} AND THANG = {4} AND XNCN = N'{5}' AND ManagerDuyetTBQH2 IS NULL AND IsDeletedTBQH2 IS NULL
-                                                           AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
+                                                           AND PathThongBao_TBQHTN_2 IS NOT NULL AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
                                                               TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN, dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTBQHTT_2));
                 }
                 catch (Exception e)
@@ -376,6 +380,7 @@ namespace EOSCRM.Dao
                             //                                                             dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], TBQH_2, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd")));
                             _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTBQH2 = {1}, ManagerDuyetTBQH2='{2}' 
                                                            WHERE NAM = {3} AND THANG = {4} AND IDKH = '{5}' AND LeaderDuyetTBQH2 IS NOT NULL
+                                                            AND PathThongBao_TBQHTN_2 IS NOT NULL
                                                             AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
                                                                TBQH_2, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTBQHTT_2));
                         }
@@ -936,6 +941,7 @@ namespace EOSCRM.Dao
                                                         @" WHERE tt.HETNO = 0 
 	                                                AND tt.TONGTIEN > 0
                                                     AND dmno.LeaderDuyetTNCN IS NOT NULL
+                                                    AND dmno.PathThongBao_TNCN IS NOT NULL
 	                                                AND tt.NAM = " + dieuKienLoc.NamHd
                                                         + " AND tt.THANG = " + dieuKienLoc.KyHd
                                                         + (dieuKienLoc.XNCN != null ? " AND kv.TENHIEU = N'" + dieuKienLoc.XNCN + "'" : "")
@@ -1192,7 +1198,7 @@ namespace EOSCRM.Dao
                             //                                                            VALUES (source.NAM, source.THANG, source.IDKH, '{3}', '{4}', '{5}');",
                             //                                                             dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], TBQH_2, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd")));
                             _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, ManagerDuyetTNCN='{2}' 
-                                                           WHERE NAM = {3} AND THANG = {4} AND IDKH = '{5}' AND LeaderDuyetTNCN IS NOT NULL
+                                                           WHERE NAM = {3} AND THANG = {4} AND IDKH = '{5}' AND LeaderDuyetTNCN IS NOT NULL AND dmno.PathThongBao_TNCN IS NOT NULL
                                                             AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
                                                                TBTNCN, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, listIdkh[i], dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
                         }
@@ -1213,7 +1219,7 @@ namespace EOSCRM.Dao
                 try
                 {
                     _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO = '{0}', IsDeletedTNCN = {1}, ManagerDuyetTNCN='{2}'
-                                                    WHERE NAM = {3} AND THANG = {4} AND XNCN = N'{5}' AND LeaderDuyetTNCN IS NOT NULL
+                                                    WHERE NAM = {3} AND THANG = {4} AND XNCN = N'{5}' AND LeaderDuyetTNCN IS NOT NULL AND PathThongBao_TNCN IS NOT NULL
                                                     AND DATEDIFF(day, NgayNhapCS, '{6}') = {7}",
                                                        TBTNCN, "NULL", nguoiPheDuyet, dieuKienLoc.NamHd, dieuKienLoc.KyHd, dieuKienLoc.XNCN, dieuKienLoc.NgayLoc, ThongTinQuyTrinh.NgayTNCN));
                 }
@@ -1238,7 +1244,7 @@ namespace EOSCRM.Dao
 //                                                            VALUES (source.NAM, source.THANG, source.IDKH, '{3}', '{4}', '{5}', '{6}', 1);",
 //                                                            khConNo.Nam, khConNo.Ky, khConNo.Idkh, TBTNCN, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd"), pathTBTNCN));
                 _db.ExecuteCommand(String.Format(@"UPDATE [DongMoNuocOnline] SET STATUS_DMNO= '{3}', PathThongBao_TNCN = '{6}', ManagerDuyetTNCN = '{4}', NGAY_TNCN='{5}', IsKySoTNCN = 1
-                                                            WHERE NAM = {0} AND THANG = {1} AND IDKH = '{2}' AND STATUS_DMNO = '{3}' ;",
+                                                            WHERE NAM = {0} AND THANG = {1} AND IDKH = '{2}' AND STATUS_DMNO = '{3}' AND PathThongBao_TNCN IS NOT NULL;",
                                                             khConNo.Nam, khConNo.Ky, khConNo.Idkh, TBTNCN, nguoiPheDuyet, DateTime.Now.ToString("yyyy-MM-dd"), pathTBTNCN));
             }
             catch(Exception e)
@@ -1638,6 +1644,7 @@ namespace EOSCRM.Dao
             }
             else
             {
+                throw new Exception();
                 return null;
             }
         }
