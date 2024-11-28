@@ -132,7 +132,7 @@
 									    <eoscrm:TextBox ID="txtNgayTNCN" runat="server" tag="datevn" />
 								    </div>
                                 </div>--%>
-                                <asp:UpdatePanel runat="server" ID="udpIsZaloAndApp">
+                                <asp:UpdatePanel runat="server" ID="udpIsZaloAndApp" Visible="false">
                                     <ContentTemplate>
                                         <div class ="left" style="margin-left:100px">
 									        <div class ="right">Cài zalo/app</div>
@@ -142,6 +142,40 @@
 								        </div>
                                     </ContentTemplate>
                                 </asp:UpdatePanel>
+                                <table>
+                                    <tbody>
+                                         <tr>
+                                             <td>
+                                                <asp:UpdatePanel runat="server" ID="udpIsGuiAppCSKH" >
+                                                    <ContentTemplate>
+                                                        <div class ="left" style="margin-left:100px">
+									                        <div class ="right">Đã gửi App CSKH</div>
+								                        </div>
+								                        <div class="left">
+									                        <asp:DropDownList ID="ddlIsGuiAppCSKH" runat="server" AutoPostBack="true"/>
+								                        </div>
+                                                    </ContentTemplate>
+                                                </asp:UpdatePanel>
+                                             </td>
+                                             <td>
+                                                <asp:UpdatePanel runat="server" ID="udpIsGuiZalo" >
+                                                    <ContentTemplate>
+                                                        <div class ="left">
+									                        <div class ="right">Đã gửi Zalo</div>
+								                        </div>
+								                        <div class="left">
+									                        <asp:DropDownList ID="ddlIsGuiZalo" runat="server" AutoPostBack="true"/>
+								                        </div>
+                                                    </ContentTemplate>
+                                                </asp:UpdatePanel>
+                                            </td>
+                                         </tr>
+                                         <tr>
+                                            
+                                        </tr>
+                                    </tbody>
+                                </table>
+
                                 <%--<asp:UpdatePanel runat="server" ID="udpNgayTNCN">
                                     <ContentTemplate>
                                         <div class ="left" style="margin-left:100px">
@@ -509,6 +543,7 @@
                     let sdt = listIdKHNhacNo[i].soDienThoai
                     data = {};
                     if (sdt != null && sdt != "") {
+                        data["Số điện thoại"] = sdt;
                         if (filter.TrangThai == "TBNN_1") {
                             data["Tin nhắn"] = "T/b (Lan2) KH co ID: " + idkh + ", ky " + kyHd + "/" + namHd + " tieu thu " + m3 + "m3" + " ,chua thanh toan " + soTien + "VND" + ", han thanh toan: " + ngayThanhToan + " tran trong kinh bao. TTCSKH: 1800 0036"
                         } else if (filter.TrangThai == "TBQH_1") {

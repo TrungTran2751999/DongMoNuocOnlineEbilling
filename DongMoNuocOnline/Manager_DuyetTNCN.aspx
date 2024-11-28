@@ -618,7 +618,7 @@
         }
         function callApiTBTNCN(khConNo) {
             return $.ajax({
-                url: "/Forms/DongMoNuocOnline/DuyetTNCN.aspx/GetThongBaoTNCN",
+                url: "/Forms/DongMoNuocOnline/Manager_DuyetTNCN.aspx/GetThongBaoTNCN",
                 type: "POST",
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -784,7 +784,7 @@
             }
             $("#loginvnpt").dialog("close");
             $.ajax({
-                url: "/Forms/DongMoNuocOnline/DuyetTNCN.aspx/LoginVnpt",
+                url: "/Forms/DongMoNuocOnline/Manager_DuyetTNCN.aspx/LoginVnpt",
                 type: "POST",
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -847,7 +847,7 @@
             })
             openWaitingDialog()
             $.ajax({
-                url: "/Forms/DongMoNuocOnline/DuyetTNCN.aspx/Sign",
+                url: "/Forms/DongMoNuocOnline/Manager_DuyetTNCN.aspx/Sign",
                 type: "POST",
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",

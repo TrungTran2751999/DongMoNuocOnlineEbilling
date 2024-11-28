@@ -94,7 +94,8 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
 
             ddlTT.Items.Clear();
             ddlTT.Items.Add(new ListItem("", ""));
-            ddlTT.Items.Add(new ListItem("TB Nhắc nợ", _dongMoNuocOnlineDao.TBNN_1));
+            ddlTT.Items.Add(new ListItem("TB thanh toán", _dongMoNuocOnlineDao.TBTN));
+            ddlTT.Items.Add(new ListItem("TB nhắc nợ", _dongMoNuocOnlineDao.TBNN_1));
             ddlTT.Items.Add(new ListItem("TB quá hạn tiền nước lần 1", _dongMoNuocOnlineDao.TBQH_1));
             ddlTT.Items.Add(new ListItem("TB quá hạn tiền nước lần 2", _dongMoNuocOnlineDao.TBQH_2));
             ddlTT.Items.Add(new ListItem("TB tạm ngừng cấp nước", _dongMoNuocOnlineDao.TBTNCN));
@@ -103,6 +104,16 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
             ddlZaloAndApp.Items.Add(new ListItem("", ""));
             ddlZaloAndApp.Items.Add(new ListItem("Đã cài zalo/app", "true"));
             ddlZaloAndApp.Items.Add(new ListItem("Chưa cài zalo/app", "false"));
+
+            ddlIsGuiAppCSKH.Items.Clear();
+            ddlIsGuiAppCSKH.Items.Add(new ListItem("", ""));
+            ddlIsGuiAppCSKH.Items.Add(new ListItem("Đã gửi", "true"));
+            ddlIsGuiAppCSKH.Items.Add(new ListItem("Chưa gửi", "false"));
+
+            ddlIsGuiZalo.Items.Clear();
+            ddlIsGuiZalo.Items.Add(new ListItem("", ""));
+            ddlIsGuiZalo.Items.Add(new ListItem("Đã gửi", "true"));
+            ddlIsGuiZalo.Items.Add(new ListItem("Chưa gửi", "false"));
 
             //foreach (var cmas in cmasList)
                 //ddlCMAs.Items.Add(new ListItem(cmas.TENCMAs, cmas.MACMAs));
@@ -211,6 +222,10 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
 
             var isZaloAndApp = ddlZaloAndApp.SelectedValue != "" ? ddlZaloAndApp.SelectedValue : null;
 
+            var IsGuiAppCSKH = ddlIsGuiAppCSKH.SelectedValue != "" ? ddlIsGuiAppCSKH.SelectedValue : null;
+
+            var IsGuiZalo = ddlIsGuiZalo.SelectedValue != "" ? ddlIsGuiZalo.SelectedValue : null;
+
             //var ngayTBQH = txtNgayTBQHTN.Text != "" && txtNgayTBQHTN .Text!=null? ConvertUtil.ToDateTime(txtNgayTBQHTN.Text) : null;
             DieuKienLoc dieuKienLoc = new DieuKienLoc
             {
@@ -222,12 +237,19 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
                 MaDuongPho = tenDuongPho,
                 NgayLoc = ngayLoc,
                 MaLoTrinh = maLoTrinh,
-                isZaloAndApp = isZaloAndApp
+                isZaloAndApp = isZaloAndApp,
+                IsGuiAppCSKH = IsGuiAppCSKH,
+                IsGuiZalo = IsGuiZalo
+                //IsGuiZalo = CheckboxIsGuiZalo.Checked
             };
             //Loc khach hang de thong bao nhan no lan 1
             //var myds = new DataSet();
             var listInfo = new List<KhConNo>();
-            if (TTSlected == _dongMoNuocOnlineDao.TBNN_1)
+            if (TTSlected == _dongMoNuocOnlineDao.TBTN)
+            {
+                listInfo = _dongMoNuocOnlineDao.GetKH_TB_TienNuoc(dieuKienLoc);
+                containerXuatFilePdf.Visible = false;
+            }else if (TTSlected == _dongMoNuocOnlineDao.TBNN_1)
             {
                 listInfo = _dongMoNuocOnlineDao.GetKH_TB_NhacNo(dieuKienLoc);
                 containerXuatFilePdf.Visible = false;
@@ -305,14 +327,15 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
         }
         protected void ddlTT_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ddlTT.SelectedValue == "TBQH_2")
-            {
-                udpIsZaloAndApp.Visible = true;
-            }
-            else
-            {
-                udpIsZaloAndApp.Visible = false;
-            }
+            //if (ddlTT.SelectedValue == "TBQH_2")
+            //{
+            //    udpIsZaloAndApp.Visible = true;
+            //}
+            //else
+            //{
+            //    udpIsZaloAndApp.Visible = false;
+            //}
+
             //if (ddlTT.SelectedValue == "TBQHTN")
             //{
             //    udpNgayTBQHTN.Visible = true;

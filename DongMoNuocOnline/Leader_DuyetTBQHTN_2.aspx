@@ -272,7 +272,13 @@
                             </ItemTemplate>
                         </asp:TemplateField>
 
-                         <asp:TemplateField HeaderText="Trạng thái" HeaderStyle-Width="80px">
+                        <asp:TemplateField HeaderText="Trạng thái trình" HeaderStyle-Width="80px">
+                            <ItemTemplate>
+                                <%# Eval("LeaderPheDuyetTBQH2") %>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                         <asp:TemplateField HeaderText="GDXN phê duyệt" HeaderStyle-Width="80px">
                             <ItemTemplate>
                                 <%# Eval("ManagerDuyetTBQH2") %>
                             </ItemTemplate>
