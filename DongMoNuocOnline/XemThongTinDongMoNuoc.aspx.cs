@@ -245,29 +245,30 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
             //Loc khach hang de thong bao nhan no lan 1
             //var myds = new DataSet();
             var listInfo = new List<KhConNo>();
-            if (TTSlected == _dongMoNuocOnlineDao.TBTN)
+            if (TTSlected == _dongMoNuocOnlineDao.TBTN) // query TBTN
             {
                 listInfo = _dongMoNuocOnlineDao.GetKH_TB_TienNuoc(dieuKienLoc);
                 containerXuatFilePdf.Visible = false;
-            }else if (TTSlected == _dongMoNuocOnlineDao.TBNN_1)
+            }
+            else if (TTSlected == _dongMoNuocOnlineDao.TBNN_1)// query TBNN
             {
                 listInfo = _dongMoNuocOnlineDao.GetKH_TB_NhacNo(dieuKienLoc);
                 containerXuatFilePdf.Visible = false;
             }
             //Loc khach hang de thong bao qua han lan 1
-            else if (TTSlected == _dongMoNuocOnlineDao.TBQH_1)
+            else if (TTSlected == _dongMoNuocOnlineDao.TBQH_1)// query TBQH_1
             {
                 listInfo = _dongMoNuocOnlineDao.GetKH_TB_QuaHan_1(dieuKienLoc);
                 containerXuatFilePdf.Visible = false;
             }
             //Loc khach hang de thong bao qua han lan 2
-            else if (TTSlected == _dongMoNuocOnlineDao.TBQH_2)
+            else if (TTSlected == _dongMoNuocOnlineDao.TBQH_2)// query TBQH_2
             {
                 listInfo = _dongMoNuocOnlineDao.GetKH_TB_QuaHan_2_DaPheDuyet(dieuKienLoc);
                 containerXuatFilePdf.Visible = true;
             }
             //Loc khach hang de thong bao tam ngung cap nuoc
-            else if (TTSlected == _dongMoNuocOnlineDao.TBTNCN)
+            else if (TTSlected == _dongMoNuocOnlineDao.TBTNCN)// query TBTNCN
             {
                 listInfo = _dongMoNuocOnlineDao.GetKH_TNCN_DaPheDuyet(dieuKienLoc);
                 containerXuatFilePdf.Visible = true;
@@ -360,8 +361,21 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
             //if (result == null) return "0";
             //return result;
         //}
+        #region thong bao thanh toan
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public static List<KhConNo> GetListTBTT(string dieuKienLocStr)
+        {
+            var dieuKienLoc = JsonConvert.DeserializeObject<DieuKienLoc>(dieuKienLocStr);
+            if (dieuKienLoc.NgayLoc != null) dieuKienLoc.NgayLoc = ((DateTime)ConvertUtil.ToDateTime(dieuKienLoc.NgayLoc)).ToString("yyyy-MM-dd");
+            var result = new DongMoNuocOnlineDao().GetKH_TB_TienNuoc(dieuKienLoc);
+            if (result == null) return new List<KhConNo>();
+            return result;
+        }
+        #endregion
+
         #region thong bao nhac no
-            #region lay thong tin khach hang nhac no
+        #region lay thong tin khach hang nhac no
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public static List<KhConNo> GetListTbNhacNo(string dieuKienLocStr)

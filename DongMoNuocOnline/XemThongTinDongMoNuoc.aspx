@@ -170,9 +170,6 @@
                                                 </asp:UpdatePanel>
                                             </td>
                                          </tr>
-                                         <tr>
-                                            
-                                        </tr>
                                     </tbody>
                                 </table>
 
@@ -382,8 +379,8 @@
         function getGiaTriDeLoc() {
             let xncn = $("#ctl00_mainCPH_ddlXNCN").val();
             let kyHd = $("#ctl00_mainCPH_txtKYHD").val();
-            let tenDuongPho = $("ctl00_mainCPH_txtDuongPho").val();
-            let ngayLoc = $("ctl00_mainCPH_txtNgayLoc").val();
+            let tenDuongPho = $("#ctl00_mainCPH_txtDuongPho").val();
+            let ngayLoc = $("#ctl00_mainCPH_txtNgayLoc").val();
             let trangThai = $("#ctl00_mainCPH_ddlTT").val();
             let tenKV = "";
             let listKV = $(".checkbox-khu-vuc");
@@ -416,13 +413,11 @@
                 NgayLoc: $("#ctl00_mainCPH_txtNgayLoc").val() || null,
                 TrangThai: trangThai,
                 isGetAll: $("#chkAllTop").is(":checked"),
-                isZaloAndApp: $("#ctl00_mainCPH_ddlZaloAndApp").val(),
+                IsGuiAppCSKH: $("#ctl00_mainCPH_ddlIsGuiAppCSKH").val() || null,
+                IsGuiZalo: $("#ctl00_mainCPH_ddlIsGuiZalo").val() || null,
                 Page:-1
                 //ngayTBQH: ngayTBQHTN
             }
-            console.log("=======ahihi")
-            console.log(objectLoc)
-            console.log("=======ahihi")
             return objectLoc
         }
         function exportToExcel(data,title) {
@@ -449,14 +444,19 @@
                         KhuVuc: filter.KhuVuc,
                         Idkh: filter.Idkh,
                         XNCN: filter.XNCN,
-                        MaLoTrinh: filter.MaDuongPho,
+                        MaLoTrinh: filter.MaLoTrinh,
                         NgayLoc: filter.NgayLoc,
-                        isZaloAndApp: $("#ctl00_mainCPH_ddlZaloAndApp").val()
+                        isZaloAndApp: $("#ctl00_mainCPH_ddlZaloAndApp").val(),
+                        IsGuiAppCSKH: filter.IsGuiAppCSKH,
+                        IsGuiZalo: filter.IsGuiZalo,
                     }
                 )
+
             let api = "";
             if (filter.TrangThai == "TBNN_1") {
-                api = "/Forms/DongMoNuocOnline/XemThongTinDongMoNuoc.aspx/GetListTbNhacNo"
+                api = "/Forms/DongMoNuocOnline/XemThongTinDongMoNuoc.aspx/GetListTbNhacNo" 
+            } else if (filter.TrangThai == "TBTT") {
+                api = "/Forms/DongMoNuocOnline/XemThongTinDongMoNuoc.aspx/GetListTBTT"
             } else if (filter.TrangThai == "TBQH_1") {
                 api = "/Forms/DongMoNuocOnline/XemThongTinDongMoNuoc.aspx/GetListTBQHLan1"
             } else if (filter.TrangThai == "TBQH_2") {
@@ -486,7 +486,9 @@
 
             let title = ""
             if (filter.TrangThai == "TBNN_1") {
-                title = "DanhSachNhacNoLan1_Ky_" + kyHd + "-" + namHd
+                title = "DanhSachNhacNo_Ky_" + kyHd + "-" + namHd
+            } else if (filter.TrangThai == "TBTT") {
+                title = "DanhSachThanhToan_Ky_" + kyHd + "-" + namHd
             } else if (filter.TrangThai == "TBQH_1") {
                 title = "DanhSachQuaHanTienNuocLan1_Ky_" + kyHd + "-" + namHd
             } else if (filter.TrangThai == "TBQH_2") {
@@ -507,8 +509,11 @@
 
                         let data = {};
                         if (sdt != null && sdt != "") {
+
                             data["Số điện thoại"] = sdt;
-                            if (filter.TrangThai == "TBNN_1") {
+                            if (filter.TrangThai == "TBTT") {
+                                data["Tin nhắn"] = "T/b (KH co ID: " + idkh + ", ky " + kyHd + "/" + namHd + " tieu thu " + m3 + "m3" + " ,chua thanh toan " + soTien + "VND" + ", han thanh toan: " + ngayThanhToan + " tran trong kinh bao. TTCSKH: 1800 0036"
+                            } else if (filter.TrangThai == "TBNN_1") {
                                 data["Tin nhắn"] = "T/b (Lan2) KH co ID: " + idkh + ", ky " + kyHd + "/" + namHd + " tieu thu " + m3 + "m3" + " ,chua thanh toan " + soTien + "VND" + ", han thanh toan: " + ngayThanhToan + " tran trong kinh bao. TTCSKH: 1800 0036"
                             } else if (filter.TrangThai == "TBQH_1") {
                                 data["Tin nhắn"] = "T/b (Lan3) KH co ID: " + idkh + ", ky " + kyHd + "/" + namHd + " tieu thu " + m3 + "m3" + " ,chua thanh toan " + soTien + "VND" + ", han thanh toan: " + ngayThanhToan + " tran trong kinh bao. TTCSKH: 1800 0036"
