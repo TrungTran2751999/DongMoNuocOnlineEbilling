@@ -282,8 +282,12 @@
         <ContentTemplate>
             <div class="crmcontainer" id="contNhacNo" runat="server" visible="false">  
                 <div style="display: flex; gap:15px">
+                    <div id="Div1" runat="server" visible="true">
+                        <button id="btnXuatFileExcel" onclick="xuatFileExcel()">Xuất file Excel</button> 
+                    </div>
+
                     <div id="containerXuatFileExcel" runat="server" visible="true">
-                        <button id="btnNhacNoExcel" onclick="xuatThongBaoNhacNo()">Khởi tạo số liệu</button> 
+                        <button id="btnNhacNoExcel" onclick="xuatThongBaoNhacNo()">Khởi tạo số liệu gửi SMS</button> 
                     </div>
                     
                     <div id="containerXuatFilePdf" runat="server" visible="false">
@@ -486,15 +490,15 @@
 
             let title = ""
             if (filter.TrangThai == "TBNN_1") {
-                title = "DanhSachNhacNo_Ky_" + kyHd + "-" + namHd
+                title = "DanhSach_GuiSMS_NhacNo_Ky_" + kyHd + "-" + namHd
             } else if (filter.TrangThai == "TBTT") {
-                title = "DanhSachThanhToan_Ky_" + kyHd + "-" + namHd
+                title = "DanhSach_GuiSMS_ThanhToan_Ky_" + kyHd + "-" + namHd
             } else if (filter.TrangThai == "TBQH_1") {
-                title = "DanhSachQuaHanTienNuocLan1_Ky_" + kyHd + "-" + namHd
+                title = "DanhSach_GuiSMS_QuaHanTienNuocLan1_Ky_" + kyHd + "-" + namHd
             } else if (filter.TrangThai == "TBQH_2") {
-                title = "DanhSachQuaHanTienNuocLan2_Ky_" + kyHd + "-" + namHd
+                title = "DanhSach_GuiSMS_QuaHanTienNuocLan2_Ky_" + kyHd + "-" + namHd
             } else if (filter.TrangThai == "TBTNCN") {
-                title = "DanhSachTamNgungCapNuoc_" + kyHd + "-" + namHd
+                title = "DanhSach_GuiSMS_TamNgungCapNuoc_" + kyHd + "-" + namHd
             }
             if (isCheckAll) {
                 getAllThongBaoNhacNo()
@@ -567,6 +571,82 @@
                 listIdKHNhacNo = []
             }
             
+        }
+        function xuatFileExcel() {
+            let isCheckAll = $("#chkAllTop").is(":checked");
+            let listData = []
+            let kyHd = $("#ctl00_mainCPH_txtKYHD").val().split("/")[0]
+            let namHd = $("#ctl00_mainCPH_txtKYHD").val().split("/")[1]
+            let filter = getGiaTriDeLoc();
+
+            let idkh; let soTien; let m3; let ngayThanhToan; let sdt
+
+            let title = ""
+            if (filter.TrangThai == "TBNN_1") {
+                title = "DanhSachNhacNo_Ky_" + kyHd + "-" + namHd
+            } else if (filter.TrangThai == "TBTT") {
+                title = "DanhSachThanhToan_Ky_" + kyHd + "-" + namHd
+            } else if (filter.TrangThai == "TBQH_1") {
+                title = "DanhSachQuaHanTienNuocLan1_Ky_" + kyHd + "-" + namHd
+            } else if (filter.TrangThai == "TBQH_2") {
+                title = "DanhSachQuaHanTienNuocLan2_Ky_" + kyHd + "-" + namHd
+            } else if (filter.TrangThai == "TBTNCN") {
+                title = "DanhSachTamNgungCapNuoc_" + kyHd + "-" + namHd
+            }
+
+            if (isCheckAll) {
+                getAllThongBaoNhacNo()
+                .done(function (res) {
+                    res = res.d
+                    for (let i = 0; i < res.length; i++) {
+                        let idkh = res[i].Idkh;
+                        let soTien = res[i].TongTien;
+                        let m3 = res[i].M3TinhTien;
+                        let ngayThanhToan = res[i].NgayThongBaoNhacNoStr
+                        let sdt = res[i].SoDienThoai
+                        let tongTien = res[i].TongTien
+
+                        let data = {};
+                        data["Idkh"] = idkh;
+                        data["M3TieuThu"] = m3;
+                        data["SDT"] = sdt;
+                        data["TongTien"] = tongTien;
+                        data["SoDienThoai"] = sdt;
+                        listData.push(data)
+
+                    }
+
+                    closeWaitingDialog();
+                    if (res.length > 0) exportToExcel(listData, title)
+                    listIdKHNhacNo = []
+
+                })
+                .fail(function (err) {
+                    closeWaitingDialog();
+                });
+
+
+            } else {
+
+                for (let i = 0; i < listIdKHNhacNo.length; i++) {
+                    let idkh = listIdKHNhacNo[i].idkh;
+                    let soTien = listIdKHNhacNo[i].tongTien;
+                    let m3 = listIdKHNhacNo[i].m3TieuThu;
+                    let ngayThanhToan = listIdKHNhacNo[i].ngayThanhToan
+                    let sdt = listIdKHNhacNo[i].soDienThoai
+
+                    data = {};
+
+                    data["Idkh"] = idkh;
+                    data["M3TieuThu"] = m3;
+                    data["SDT"] = sdt;
+                    data["TongTien"] = tongTien;
+                    data["SoDienThoai"] = sdt;
+
+                }
+                if (listData.length > 0) exportToExcel(listData, title)
+                listIdKHNhacNo = []
+            }
         }
         //xuat thong bao giay
         function countPageGiaThongBaoPdf(dieuKienLoc) {

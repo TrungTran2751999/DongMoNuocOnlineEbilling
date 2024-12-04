@@ -379,71 +379,71 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
         protected void btnDuyetTBQuaHan_Click(object sender, EventArgs e)
         {
 
-            var txtKYHDText = "01/" + txtKYHD.Text.Trim();
-            namHD = ConvertUtil.ToDateTime(txtKYHDText.Trim()).Value.Year;
-            thangHD = ConvertUtil.ToDateTime(txtKYHDText.Trim()).Value.Month;
+            //var txtKYHDText = "01/" + txtKYHD.Text.Trim();
+            //namHD = ConvertUtil.ToDateTime(txtKYHDText.Trim()).Value.Year;
+            //thangHD = ConvertUtil.ToDateTime(txtKYHDText.Trim()).Value.Month;
 
-            var loginInfo = Session[SessionKey.USER_LOGIN] as UserAdmin;
+            //var loginInfo = Session[SessionKey.USER_LOGIN] as UserAdmin;
 
-            if (loginInfo == null) return;
+            //if (loginInfo == null) return;
 
-            var nameLogin = loginInfo.Username;
-            loginName = nameLogin;
-            var NhanVienPheDuyetTBQH = _dongMoNuocOnlineDao.CheckNhanVienPheDuyetTBQH(loginName);
-            if (NhanVienPheDuyetTBQH == null)
-            {
-                CloseWaitingDialog();
-                ShowWarning("Bạn không đủ quyền thực hiền chức năng này");
-            }
-            else
-            {
-                var result = _dongMoNuocOnlineDao.PheDuyetQuaHanTienNuoc(namHD, thangHD, NhanVienPheDuyetTBQH.MAPB);
-                CloseWaitingDialog();
-                if (result > 0)
-                {
-                    ShowInfor(String.Format("Duyệt {0} khách hàng quá hạn thanh toán thành công", result));
-                    //ShowInfor("khách hàng quá hạn thanh toán thành công");
-                }
-                else if (result == -1)
-                {
-                    ShowWarning("Không có khách hàng nào quá hạn tìền nước");
-                }
-                else if (result == -2)
-                {
-                    ShowWarning("Bạn không đủ thực hiện quyền này");
-                }
-            }
+            //var nameLogin = loginInfo.Username;
+            //loginName = nameLogin;
+            //var NhanVienPheDuyetTBQH = _dongMoNuocOnlineDao.CheckNhanVienPheDuyetTBQH(loginName);
+            //if (NhanVienPheDuyetTBQH == null)
+            //{
+            //    CloseWaitingDialog();
+            //    ShowWarning("Bạn không đủ quyền thực hiền chức năng này");
+            //}
+            //else
+            //{
+            //    var result = _dongMoNuocOnlineDao.PheDuyetQuaHanTienNuoc(namHD, thangHD, NhanVienPheDuyetTBQH.MAPB);
+            //    CloseWaitingDialog();
+            //    if (result > 0)
+            //    {
+            //        ShowInfor(String.Format("Duyệt {0} khách hàng quá hạn thanh toán thành công", result));
+            //        //ShowInfor("khách hàng quá hạn thanh toán thành công");
+            //    }
+            //    else if (result == -1)
+            //    {
+            //        ShowWarning("Không có khách hàng nào quá hạn tìền nước");
+            //    }
+            //    else if (result == -2)
+            //    {
+            //        ShowWarning("Bạn không đủ thực hiện quyền này");
+            //    }
+            //}
             
         }
         protected void btnDuyetTNCapNuoc_Click(object sender, EventArgs e)
         {
-            var txtKYHDText = "01/" + txtKYHD.Text.Trim();
-            namHD = ConvertUtil.ToDateTime(txtKYHDText.Trim()).Value.Year;
-            thangHD = ConvertUtil.ToDateTime(txtKYHDText.Trim()).Value.Month;
+            //var txtKYHDText = "01/" + txtKYHD.Text.Trim();
+            //namHD = ConvertUtil.ToDateTime(txtKYHDText.Trim()).Value.Year;
+            //thangHD = ConvertUtil.ToDateTime(txtKYHDText.Trim()).Value.Month;
 
-            var loginInfo = Session[SessionKey.USER_LOGIN] as UserAdmin;
+            //var loginInfo = Session[SessionKey.USER_LOGIN] as UserAdmin;
 
-            if (loginInfo == null) return;
+            //if (loginInfo == null) return;
 
-            var nameLogin = loginInfo.Username;
-            loginName = nameLogin;
-            var GDXN = _dongMoNuocOnlineDao.CheckGDXN(loginName);
-            var result = _dongMoNuocOnlineDao.PheDuyetTamNgungCapNuoc(checkGDXN, namHD, thangHD, GDXN.MAPB);
-            if (result > 0)
-            {
-                CloseWaitingDialog();
-                ShowInfor(String.Format("Duyệt {0} khách hàng tạm ngừng cấp nước thành công", result));
-            }
-            else if (result == -1)
-            {
-                CloseWaitingDialog();
-                ShowWarning("Không có khách hàng nào được duyệt cắt nước");
-            }
-            else if (result == -2)
-            {
-                CloseWaitingDialog();
-                ShowWarning("Bạn không đủ thực hiện quyền này");
-            }
+            //var nameLogin = loginInfo.Username;
+            //loginName = nameLogin;
+            //var GDXN = _dongMoNuocOnlineDao.CheckGDXN(loginName);
+            //var result = _dongMoNuocOnlineDao.PheDuyetTamNgungCapNuoc(checkGDXN, namHD, thangHD, GDXN.MAPB);
+            //if (result > 0)
+            //{
+            //    CloseWaitingDialog();
+            //    ShowInfor(String.Format("Duyệt {0} khách hàng tạm ngừng cấp nước thành công", result));
+            //}
+            //else if (result == -1)
+            //{
+            //    CloseWaitingDialog();
+            //    ShowWarning("Không có khách hàng nào được duyệt cắt nước");
+            //}
+            //else if (result == -2)
+            //{
+            //    CloseWaitingDialog();
+            //    ShowWarning("Bạn không đủ thực hiện quyền này");
+            //}
         }
         protected void btnXuatTBQHTN_Click(object sender, EventArgs e)
         {
