@@ -29,8 +29,8 @@ namespace EOSCRM.Dao
         public readonly string TBTNCN = "TBTNCN";
         public readonly int totalPage = 1000;
         public readonly string rootFolder = "E:\\EbillingDongMoNuoc\\SourceCode\\EOSCRM.Web\\ThongBaos";
-        //public readonly string domainAPI = "http://192.168.0.15:6547/";//server LIVE
-        public readonly string domainAPI = "http://192.168.0.19:6547/";//server TEST
+        public readonly string domainAPI = "http://192.168.0.15:6547/";//server LIVE
+        //public readonly string domainAPI = "http://192.168.0.19:6547/";//server TEST
         //public readonly string domainAPI = "https://localhost:44311/";
 
         #region Giai đoạn thông báo tiền nước
@@ -43,7 +43,7 @@ namespace EOSCRM.Dao
             }
             try
             {
-
+                var listLastResult = new List<KhConNo>();
                 var ListResult = _db.ExecuteQuery<KhConNo>(@"
                                                  SELECT
                                                         tt.IDKH as Idkh,
@@ -51,7 +51,7 @@ namespace EOSCRM.Dao
 			                                            tt.NAM as Nam,
 			                                            tt.THANG as Ky,
 			                                            tt.M3TINHTIEN as M3TinhTien,
-			                                            tt.NGAYNHAPCS as NgayNhapCS,
+			                                            tt.NGAYNHAP as NgayNhapCS,
                                                         tt.TONGTIEN as TongTien,
                                                         kh.DIDONG1 as SoDienThoai,
 			                                            kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi
@@ -69,9 +69,47 @@ namespace EOSCRM.Dao
                                                         + (dieuKienLoc.MaDuongPho != null ? " AND dp.TENDP LIKE " + "N'%" + dieuKienLoc.MaDuongPho + "%'" : "")
                                                         + (dieuKienLoc.KhuVuc != null ? " AND kv.MAKV IN " + "(" + dieuKienLoc.KhuVuc + ")" : "")
                                                         + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
-                                                        + (dieuKienLoc.IsGuiAppCSKH == null ? "" : dieuKienLoc.IsGuiAppCSKH == "true" ? " AND dmnom.IsGuiThongBaoTienNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTN + "'" + " AND dmnom.IsGuiAppCSKH = 1 AND (dmnom.IsXoaApp = 0 OR dmnom.IsXoaApp IS NULL)" : dieuKienLoc.IsGuiAppCSKH == "false" ? " AND (dmnom.IsGuiThongBaoTienNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTN + "' AND ((dmnom.IsGuiAppCSKH = 0 OR dmnom.IsGuiAppCSKH IS NULL) OR (dmnom.IsXoaApp = 1)) OR LoaiThongBao IS NULL)" : "")
-                                                        + (dieuKienLoc.IsGuiZalo == null ? "" : dieuKienLoc.IsGuiZalo == "true" ? " AND dmnom.IsGuiThongBaoTienNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTN + "'" + " AND dmnom.IsGuiZalo = 1" : dieuKienLoc.IsGuiZalo == "false" ? " AND (dmnom.IsGuiThongBaoTienNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTN + "' AND (dmnom.IsGuiZalo = 0 OR dmnom.IsGuiZalo IS NULL) OR LoaiThongBao IS NULL)" : "")
-                                                        + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayThongBaoTienNuoc)
+                                                        + (dieuKienLoc.IsGuiAppCSKH == null ? "" : dieuKienLoc.IsGuiAppCSKH == "true" ? " AND dmnom.IsGuiThongBaoTienNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTN + "'" + " AND dmnom.IsGuiAppCSKH = 1 AND (dmnom.IsXoaApp = 0 OR dmnom.IsXoaApp IS NULL) " : dieuKienLoc.IsGuiAppCSKH == "false" ? (@"
+	                                                                                                                                                                                                                                                                                                                                                    AND (
+                                                                                                                                                                                                                                                                                                                                                        (
+		                                                                                                                                                                                                                                                                                                                                                    dmnom.IsGuiThongBaoTienNuoc = 1 
+		                                                                                                                                                                                                                                                                                                                                                    AND dmnom.LoaiThongBao = 'TBTT'
+		                                                                                                                                                                                                                                                                                                                                                    AND (
+				                                                                                                                                                                                                                                                                                                                                                    (dmnom.IsGuiAppCSKH = 0 OR dmnom.IsGuiAppCSKH IS NULL)
+				                                                                                                                                                                                                                                                                                                                                                    OR dmnom.IsXoaApp = 1
+			                                                                                                                                                                                                                                                                                                                                                    )
+	                                                                                                                                                                                                                                                                                                                                                    )
+	                                                                                                                                                                                                                                                                                                                                                    OR (LoaiThongBao IS NULL OR 
+	                                                                                                                                                                                                                                                                                                                                                    (
+		                                                                                                                                                                                                                                                                                                                                                    SELECT TOP 1 IDKH FROM DongMoNuocOnline_Message 
+		                                                                                                                                                                                                                                                                                                                                                    WHERE IDKH = tt.IDKH 
+		                                                                                                                                                                                                                                                                                                                                                    AND THANG = tt.THANG
+		                                                                                                                                                                                                                                                                                                                                                    AND NAM = tt.NAM
+		                                                                                                                                                                                                                                                                                                                                                    AND LoaiThongBao = 'TBTT'
+                                                                                                                                                                                                                                                                                                                                                            AND IsGuiAppCSKH = 1 
+                                                                                                                                                                                                                                                                                                                                                            AND IsXoaApp = 0
+	                                                                                                                                                                                                                                                                                                                                                    ) IS NULL)
+                                                                                                                                                                                                                                                                                                                                                    )") : "")
+                                                        + (dieuKienLoc.IsGuiZalo == null ? "" : dieuKienLoc.IsGuiZalo == "true" ? " AND dmnom.IsGuiThongBaoTienNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTN + "'" + " AND dmnom.IsGuiZalo = 1" : dieuKienLoc.IsGuiZalo == "false" ? (@"
+	                                                                                                                                                                                                                                                                                        AND (
+                                                                                                                                                                                                                                                                                            (
+		                                                                                                                                                                                                                                                                                        dmnom.IsGuiThongBaoTienNuoc = 1 
+		                                                                                                                                                                                                                                                                                        AND dmnom.LoaiThongBao = 'TBTT'
+		                                                                                                                                                                                                                                                                                        AND (
+				                                                                                                                                                                                                                                                                                        (dmnom.IsGuiZalo = 0 OR dmnom.IsGuiZalo IS NULL)
+			                                                                                                                                                                                                                                                                                        )
+	                                                                                                                                                                                                                                                                                        )
+	                                                                                                                                                                                                                                                                                        OR (LoaiThongBao IS NULL OR 
+	                                                                                                                                                                                                                                                                                        (
+		                                                                                                                                                                                                                                                                                        SELECT TOP 1 IDKH FROM DongMoNuocOnline_Message 
+		                                                                                                                                                                                                                                                                                        WHERE IDKH = tt.IDKH 
+		                                                                                                                                                                                                                                                                                        AND THANG = tt.THANG
+		                                                                                                                                                                                                                                                                                        AND NAM = tt.NAM
+		                                                                                                                                                                                                                                                                                        AND LoaiThongBao = 'TBTT'
+                                                                                                                                                                                                                                                                                                AND IsGuiZalo = 1
+	                                                                                                                                                                                                                                                                                        ) IS NULL)
+                                                                                                                                                                                                                                                                                        )") : "")
+                                                        + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayThongBaoTienNuoc)
                                                         + " ORDER BY tt.NGAYNHAPCS DESC"
                                                         )
                                             .Select(x => new KhConNo
@@ -89,9 +127,14 @@ namespace EOSCRM.Dao
                                                 SoDienThoai = x.SoDienThoai
                                             })
                                             .ToList();
-
-
-                return ListResult;
+                
+                foreach(var khConNo in ListResult){
+                    if (listLastResult.Where(x => x.Idkh == khConNo.Idkh).FirstOrDefault()==null)
+                    {
+                        listLastResult.Add(khConNo);
+                    }
+                }
+                return listLastResult;
 
             }
             catch (Exception e)
@@ -120,7 +163,7 @@ namespace EOSCRM.Dao
 			                                            tt.NAM as Nam,
 			                                            tt.THANG as Ky,
 			                                            tt.M3TINHTIEN as M3TinhTien,
-			                                            tt.NGAYNHAPCS as NgayNhapCS,
+			                                            tt.NGAYNHAP as NgayNhapCS,
                                                         tt.TONGTIEN as TongTien,
                                                         kh.DIDONG1 as SoDienThoai,
 			                                            kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi
@@ -140,7 +183,7 @@ namespace EOSCRM.Dao
                                                         + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
                                                         + (dieuKienLoc.IsGuiAppCSKH == null ? "" : dieuKienLoc.IsGuiAppCSKH == "true" ? " AND dmnom.IsGuiThongBaoNhacNo = 1 AND dmnom.LoaiThongBao = " + "'" + TBNN_1 + "'" + " AND dmnom.IsGuiAppCSKH = 1 AND (dmnom.IsXoaApp = 0 OR dmnom.IsXoaApp IS NULL)" : dieuKienLoc.IsGuiAppCSKH == "false" ? " AND (dmnom.IsGuiThongBaoNhacNo = 1 AND dmnom.LoaiThongBao = " + "'" + TBNN_1 + "' AND ((dmnom.IsGuiAppCSKH = 0 OR dmnom.IsGuiAppCSKH IS NULL) OR (dmnom.IsXoaApp = 1)) OR LoaiThongBao IS NULL)" : "")
                                                         + (dieuKienLoc.IsGuiZalo == null ? "" : dieuKienLoc.IsGuiZalo == "true" ? " AND dmnom.IsGuiThongBaoNhacNo = 1 AND dmnom.LoaiThongBao = " + "'" + TBNN_1 + "'" + " AND dmnom.IsGuiZalo = 1" : dieuKienLoc.IsGuiZalo == "false" ? " AND (dmnom.IsGuiThongBaoNhacNo = 1 AND dmnom.LoaiThongBao = " + "'" + TBNN_1 + "' AND (dmnom.IsGuiZalo = 0 OR dmnom.IsGuiZalo IS NULL) OR LoaiThongBao IS NULL)" : "")
-                                                        + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayThongBaoNhacNo)
+                                                        + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayThongBaoNhacNo)
                                                         + " ORDER BY tt.NGAYNHAPCS DESC"
                                                         )
                                             .Select(x => new KhConNo
@@ -189,7 +232,7 @@ namespace EOSCRM.Dao
 			                                            tt.NAM as Nam,
 			                                            tt.THANG as Ky,
 			                                            tt.M3TINHTIEN as M3TinhTien,
-			                                            tt.NGAYNHAPCS as NgayNhapCS,
+			                                            tt.NGAYNHAP as NgayNhapCS,
                                                         tt.TONGTIEN as TongTien,
                                                         kh.DIDONG1 as SoDienThoai,
 			                                            kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi
@@ -209,7 +252,7 @@ namespace EOSCRM.Dao
                                                         + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
                                                         + (dieuKienLoc.IsGuiAppCSKH == null ? "" : dieuKienLoc.IsGuiAppCSKH == "true" ? " AND dmnom.IsGuiThongBaoQuaHanLan1 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_1 + "'" + " AND dmnom.IsGuiAppCSKH = 1 AND (dmnom.IsXoaApp = 0 OR dmnom.IsXoaApp IS NULL)" : dieuKienLoc.IsGuiAppCSKH == "false" ? " AND dmnom.IsGuiThongBaoQuaHanLan1 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_1 + "' AND ((dmnom.IsGuiAppCSKH = 0 OR dmnom.IsGuiAppCSKH IS NULL) OR (dmnom.IsXoaApp = 1))" : "")
                                                         + (dieuKienLoc.IsGuiZalo == null ? "" : dieuKienLoc.IsGuiZalo == "true" ? " AND dmnom.IsGuiThongBaoQuaHanLan1 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_1 + "'" + " AND dmnom.IsGuiZalo = 1" : dieuKienLoc.IsGuiZalo == "false" ? " AND dmnom.IsGuiThongBaoQuaHanLan1 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_1 + "' AND (dmnom.IsGuiZalo = 0 OR dmnom.IsGuiZalo IS NULL)" : "")
-                                                        + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTBQHTT_1)
+                                                        + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTBQHTT_1)
                                                         + " ORDER BY tt.NGAYNHAPCS DESC"
                                                         )
                                             .Select(x => new KhConNo
@@ -253,7 +296,7 @@ namespace EOSCRM.Dao
 			                                                tt.NAM as Nam,
 			                                                tt.THANG as Ky,
 			                                                tt.M3TINHTIEN as M3TinhTien,
-			                                                tt.NGAYNHAPCS as NgayNhapCS,
+			                                                tt.NGAYNHAP as NgayNhapCS,
                                                             tt.TONGTIEN as TongTien,
                                                             kh.DIDONG1 as SoDienThoai,
                                                             dmno.IsDeletedTBQH2 as IsDeletedTBQH2,
@@ -275,7 +318,7 @@ namespace EOSCRM.Dao
                                                             + (dieuKienLoc.MaDuongPho != null ? " AND dp.TENDP LIKE " + "N'%" + dieuKienLoc.MaDuongPho + "%'" : "")
                                                             + (dieuKienLoc.KhuVuc != null ? " AND kv.MAKV IN " + "(" + dieuKienLoc.KhuVuc + ")" : "")
                                                             + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
-                                                            + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTBQHTT_2)
+                                                            + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTBQHTT_2)
                                                             + " ORDER BY tt.NGAYNHAPCS DESC"
                                                             )
                                                 .Select(x => new KhConNo
@@ -321,7 +364,7 @@ namespace EOSCRM.Dao
 			                                                tt.NAM as Nam,
 			                                                tt.THANG as Ky,
 			                                                tt.M3TINHTIEN as M3TinhTien,
-			                                                tt.NGAYNHAPCS as NgayNhapCS,
+			                                                tt.NGAYNHAP as NgayNhapCS,
                                                             tt.TONGTIEN as TongTien,
                                                             kh.DIDONG1 as SoDienThoai,
                                                             dmno.IsDeletedTBQH2 as IsDeletedTBQH2,
@@ -344,7 +387,7 @@ namespace EOSCRM.Dao
                                                             + (dieuKienLoc.MaDuongPho != null ? " AND dp.TENDP LIKE " + "N'%" + dieuKienLoc.MaDuongPho + "%'" : "")
                                                             + (dieuKienLoc.KhuVuc != null ? " AND kv.MAKV IN " + "(" + dieuKienLoc.KhuVuc + ")" : "")
                                                             + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
-                                                            + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTBQHTT_2)
+                                                            + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTBQHTT_2)
                                                             + " ORDER BY tt.NGAYNHAPCS DESC"
                                                             )
                                                 .Select(x => new KhConNo
@@ -515,7 +558,7 @@ namespace EOSCRM.Dao
 	                                                tt.NAM as Nam,
 	                                                tt.THANG as Ky,
 	                                                tt.M3TINHTIEN as M3TinhTien,
-	                                                tt.NGAYNHAPCS as NgayNhapCS,
+	                                                tt.NGAYNHAP as NgayNhapCS,
                                                     tt.TONGTIEN as TongTien,
                                                     kh.DIDONG1 as SoDienThoai,
 	                                                kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi,
@@ -538,8 +581,8 @@ namespace EOSCRM.Dao
                                                     + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
                                                     + (dieuKienLoc.IsGuiAppCSKH == null ? "" : dieuKienLoc.IsGuiAppCSKH == "true" ? " AND dmnom.IsGuiThongBaoQuaHanLan2 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_2 + "'" + " AND dmnom.IsGuiAppCSKH = 1 AND (dmnom.IsXoaApp = 0 OR dmnom.IsXoaApp IS NULL)" : dieuKienLoc.IsGuiAppCSKH == "false" ? " AND (dmnom.IsGuiThongBaoQuaHanLan2 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_2 + "' AND ((dmnom.IsGuiAppCSKH = 0 OR dmnom.IsGuiAppCSKH IS NULL) OR (dmnom.IsXoaApp = 1)))" : "")
                                                     + (dieuKienLoc.IsGuiZalo == null ? "" : dieuKienLoc.IsGuiZalo == "true" ? " AND dmnom.IsGuiThongBaoQuaHanLan2 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_2 + "'" + " AND dmnom.IsGuiZalo = 1" : dieuKienLoc.IsGuiZalo == "false" ? " AND dmnom.IsGuiThongBaoQuaHanLan2 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_2 + "' AND (dmnom.IsGuiZalo = 0 OR dmnom.IsGuiZalo IS NULL)" : "")
-                                                    + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTBQHTT_2)
-                                                    + " ORDER BY tt.NGAYNHAPCS DESC")
+                                                    + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTBQHTT_2)
+                                                    + " ORDER BY tt.NGAYNHAP DESC")
                                                     .Select(x => new KhConNo
                                                     {
                                                         Idkh = x.Idkh,
@@ -657,7 +700,7 @@ namespace EOSCRM.Dao
                                                     + (dieuKienLoc.IsGuiAppCSKH == null ? "" : dieuKienLoc.IsGuiAppCSKH == "true" ? " AND dmnom.IsGuiThongBaoQuaHanLan2 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_2 + "'" + " AND dmnom.IsGuiAppCSKH = 1 AND (dmnom.IsXoaApp = 0 OR dmnom.IsXoaApp IS NULL)" : dieuKienLoc.IsGuiAppCSKH == "false" ? " AND dmnom.IsGuiThongBaoQuaHanLan2 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_2 + "' AND ((dmnom.IsGuiAppCSKH = 0 OR dmnom.IsGuiAppCSKH IS NULL) OR (dmnom.IsXoaApp = 1))" : "")
                                                     + (dieuKienLoc.IsGuiZalo == null ? "" : dieuKienLoc.IsGuiZalo == "true" ? " AND dmnom.IsGuiThongBaoQuaHanLan2 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_2 + "'" + " AND dmnom.IsGuiZalo = 1" : dieuKienLoc.IsGuiZalo == "false" ? " AND dmnom.IsGuiThongBaoQuaHanLan2 = 1 AND dmnom.LoaiThongBao = " + "'" + TBQH_2 + "' AND (dmnom.IsGuiZalo = 0 OR dmnom.IsGuiZalo IS NULL)" : "")
                                                     + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
-                                                    + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTBQHTT_2)
+                                                    + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTBQHTT_2)
                                                     + (dieuKienLoc.isZaloAndApp == "false" ? " AND ((kh.ZALOUSERID IS NULL OR kh.ZALOUSERID = '') AND kh.isZNS = 0)"
                                                         : dieuKienLoc.isZaloAndApp == "true" ? " AND ((kh.ZALOUSERID IS NOT NULL AND kh.ZALOUSERID <> '') OR kh.isZNS = 1)" : ""))
                                                     .FirstOrDefault();
@@ -1062,7 +1105,7 @@ namespace EOSCRM.Dao
 			                                                tt.NAM as Nam,
 			                                                tt.THANG as Ky,
 			                                                tt.M3TINHTIEN as M3TinhTien,
-			                                                tt.NGAYNHAPCS as NgayNhapCS,
+			                                                tt.NGAYNHAP as NgayNhapCS,
                                                             tt.TONGTIEN as TongTien,
                                                             kh.DIDONG1 as SoDienThoai,
 			                                                kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi,
@@ -1083,7 +1126,7 @@ namespace EOSCRM.Dao
                                                             + (dieuKienLoc.MaDuongPho != null ? String.Format(" AND dp.TENDP LIKE N'%{0}%'", dieuKienLoc.MaDuongPho) : "")
                                                             + (dieuKienLoc.KhuVuc != null ? " AND kv.MAKV IN " + "(" + dieuKienLoc.KhuVuc + ")" : "")
                                                             + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
-                                                            + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
+                                                            + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
                                                             + " AND dmno.PathThongBao_TNCN IS NOT NULL"
                                                             + " AND dmno.ManagerDuyetTNCN IS NULL"
                                                             + " ORDER BY tt.NGAYNHAPCS DESC"
@@ -1130,7 +1173,7 @@ namespace EOSCRM.Dao
 			                                                tt.NAM as Nam,
 			                                                tt.THANG as Ky,
 			                                                tt.M3TINHTIEN as M3TinhTien,
-			                                                tt.NGAYNHAPCS as NgayNhapCS,
+			                                                tt.NGAYNHAP as NgayNhapCS,
                                                             tt.TONGTIEN as TongTien,
                                                             kh.DIDONG1 as SoDienThoai,
                                                             dmno.IsDeletedTNCN as IsDeletedTNCN,
@@ -1154,7 +1197,7 @@ namespace EOSCRM.Dao
                                                             + (dieuKienLoc.MaDuongPho != null ? " AND dp.TENDP LIKE " + "N'%" + dieuKienLoc.MaDuongPho + "%'" : "")
                                                             + (dieuKienLoc.KhuVuc != null ? " AND kv.MAKV IN " + "(" + dieuKienLoc.KhuVuc + ")" : "")
                                                             + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
-                                                            + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
+                                                            + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
                                                             + " ORDER BY tt.NGAYNHAPCS DESC"
                                                             )
                                                 .Select(x => new KhConNo
@@ -1478,7 +1521,7 @@ namespace EOSCRM.Dao
 			                                                tt.NAM as Nam,
 			                                                tt.THANG as Ky,
 			                                                tt.M3TINHTIEN as M3TinhTien,
-			                                                tt.NGAYNHAPCS as NgayNhapCS,
+			                                                tt.NGAYNHAP as NgayNhapCS,
                                                             tt.TONGTIEN as TongTien,
                                                             kh.DIDONG1 as SoDienThoai,
 			                                                kh.SONHA+', '+dp.TENDP+', '+kv.TENKV as DiaChi,
@@ -1500,7 +1543,7 @@ namespace EOSCRM.Dao
                                                             + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
                                                             + (dieuKienLoc.IsGuiAppCSKH == null ? "" : dieuKienLoc.IsGuiAppCSKH == "true" ? " AND dmnom.IsGuiThongBaoTamNgungCapNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTNCN + "'" + " AND dmnom.IsGuiAppCSKH = 1 AND (dmnom.IsXoaApp = 0 OR dmnom.IsXoaApp IS NULL)" : dieuKienLoc.IsGuiAppCSKH == "false" ? " AND dmnom.IsGuiThongBaoTamNgungCapNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTNCN + "' AND ((dmnom.IsGuiAppCSKH = 0 OR dmnom.IsGuiAppCSKH IS NULL) OR (dmnom.IsXoaApp = 1))" : "")
                                                             + (dieuKienLoc.IsGuiZalo == null ? "" : dieuKienLoc.IsGuiZalo == "true" ? " AND dmnom.IsGuiThongBaoTamNgungCapNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTNCN + "'" + " AND dmnom.IsGuiZalo = 1" : dieuKienLoc.IsGuiZalo == "false" ? " AND dmnom.IsGuiThongBaoTamNgungCapNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTNCN + "' AND (dmnom.IsGuiZalo = 0 OR dmnom.IsGuiZalo IS NULL)" : "")
-                                                            + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
+                                                            + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
                                                             + " AND dmno.PathThongBao_TNCN IS NOT NULL"
                                                             + " AND dmno.ManagerDuyetTNCN IS NOT NULL"
                                                             + " ORDER BY tt.NGAYNHAPCS DESC"
@@ -1692,7 +1735,7 @@ namespace EOSCRM.Dao
                                                 + (dieuKienLoc.MaLoTrinh != null ? " AND tt.MADP= " + "'" + dieuKienLoc.MaLoTrinh + "'" : "")
                                                 + (dieuKienLoc.IsGuiAppCSKH == null ? "" : dieuKienLoc.IsGuiAppCSKH == "true" ? " AND dmnom.IsGuiThongBaoTamNgungCapNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTNCN + "'" + " AND dmnom.IsGuiAppCSKH = 1 AND (dmnom.IsXoaApp = 0 OR dmnom.IsXoaApp IS NULL)" : dieuKienLoc.IsGuiAppCSKH == "false" ? " AND dmnom.IsGuiThongBaoTamNgungCapNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTNCN + "' AND ((dmnom.IsGuiAppCSKH = 0 OR dmnom.IsGuiAppCSKH IS NULL) OR (dmnom.IsXoaApp = 1))" : "")
                                                 + (dieuKienLoc.IsGuiZalo == null ? "" : dieuKienLoc.IsGuiZalo == "true" ? " AND dmnom.IsGuiThongBaoTamNgungCapNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTNCN + "'" + " AND dmnom.IsGuiZalo = 1" : dieuKienLoc.IsGuiZalo == "false" ? " AND dmnom.IsGuiThongBaoTamNgungCapNuoc = 1 AND dmnom.LoaiThongBao = " + "'" + TBTNCN + "' AND (dmnom.IsGuiZalo = 0 OR dmnom.IsGuiZalo IS NULL)" : "")
-                                                + " AND DATEDIFF(day, tt.NGAYNHAPCS, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
+                                                + " AND DATEDIFF(day, tt.NGAYNHAP, " + (dieuKienLoc.NgayLoc == null ? " GETDATE()" : "'" + dieuKienLoc.NgayLoc + "'") + ")=" + (ThongTinQuyTrinh.NgayTNCN)
                                                 + (dieuKienLoc.isZaloAndApp == "false" ? " AND ((kh.ZALOUSERID IS NULL OR kh.ZALOUSERID = '') AND kh.isZNS = 0)"
                                                     : dieuKienLoc.isZaloAndApp == "true" ? " AND ((kh.ZALOUSERID IS NOT NULL AND kh.ZALOUSERID <> '') OR kh.isZNS = 1)" : "")
                                                 )
