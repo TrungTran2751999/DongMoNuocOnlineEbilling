@@ -121,42 +121,6 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao {
         protected global::System.Web.UI.WebControls.DropDownList ddlZaloAndApp;
         
         /// <summary>
-        /// udpIsGuiAppCSKH control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel udpIsGuiAppCSKH;
-        
-        /// <summary>
-        /// ddlIsGuiAppCSKH control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlIsGuiAppCSKH;
-        
-        /// <summary>
-        /// udpIsGuiZalo control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel udpIsGuiZalo;
-        
-        /// <summary>
-        /// ddlIsGuiZalo control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlIsGuiZalo;
-        
-        /// <summary>
         /// ddlXNCN control.
         /// </summary>
         /// <remarks>
@@ -191,6 +155,24 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlLoTrinh;
+        
+        /// <summary>
+        /// ddlIsGuiAppCSKH control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlIsGuiAppCSKH;
+        
+        /// <summary>
+        /// ddlIsGuiZalo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlIsGuiZalo;
         
         /// <summary>
         /// btnBaoCao control.

@@ -425,7 +425,7 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
             {
                 var khConNos = JsonConvert.DeserializeObject<List<KhConNo>>(listKHConNo);
                 var dieuKienLoc = JsonConvert.DeserializeObject<DieuKienLoc>(dieuKienLocStr);
-                if (dieuKienLoc != null) dieuKienLoc.NgayLoc = ((DateTime)ConvertUtil.ToDateTime(dieuKienLoc.NgayLoc)).ToString("yyyy-MM-dd");
+                if (dieuKienLoc != null && dieuKienLoc.NgayLoc!= null) dieuKienLoc.NgayLoc = ((DateTime)ConvertUtil.ToDateTime(dieuKienLoc.NgayLoc)).ToString("yyyy-MM-dd");
                 //var listKHConNo = new DongMoNuocOnlineDao().GetKH_TB_QuaHan_2_DaPheDuyet(dieuKienLoc);
                 var result = new DongMoNuocOnlineDao().GetAllGiayThongBaoQuaHan2_PDF(khConNos, dieuKienLoc);
                 //if (result == null) return new List<KhConNo>();
@@ -440,7 +440,7 @@ namespace EOSCRM.Web.Forms.KhachHang.BaoCao
             public static KhConNo CountGiayThongBaoQuaHan2(string dieuKienLocStr)
             {
                 var dieuKienLoc = JsonConvert.DeserializeObject<DieuKienLoc>(dieuKienLocStr);
-                if (dieuKienLoc != null) dieuKienLoc.NgayLoc = ((DateTime)ConvertUtil.ToDateTime(dieuKienLoc.NgayLoc)).ToString("yyyy-MM-dd");
+                if (dieuKienLoc != null && dieuKienLoc.NgayLoc!=null) dieuKienLoc.NgayLoc = ((DateTime)ConvertUtil.ToDateTime(dieuKienLoc.NgayLoc)).ToString("yyyy-MM-dd");
                 //var listKHConNo = new DongMoNuocOnlineDao().GetKH_TB_QuaHan_2_DaPheDuyet(dieuKienLoc);
                 var result = new DongMoNuocOnlineDao().Count_TB_QuaHan_DaPheDuyet(dieuKienLoc);
                 //if (result == null) return new List<KhConNo>();

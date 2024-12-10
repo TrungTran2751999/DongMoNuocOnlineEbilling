@@ -144,7 +144,7 @@
                                 </asp:UpdatePanel>
                                 <table>
                                     <tbody>
-                                         <tr>
+                                         <%--<tr>
                                              <td>
                                                 <asp:UpdatePanel runat="server" ID="udpIsGuiAppCSKH" >
                                                     <ContentTemplate>
@@ -169,7 +169,7 @@
                                                     </ContentTemplate>
                                                 </asp:UpdatePanel>
                                             </td>
-                                         </tr>
+                                         </tr>--%>
                                     </tbody>
                                 </table>
 
@@ -210,6 +210,21 @@
 								</div>
 								<div class="left width-100">
 									<asp:DropDownList ID="ddlLoTrinh" runat="server" />
+								</div>
+                            </td>                            
+                        </tr> 
+
+                        <tr>
+                          <td class="crmcell right">Đã gửi App CSKH</td>
+                            <td class="crmcell">
+                                <div class="left width-100">
+                                    <asp:DropDownList ID="ddlIsGuiAppCSKH" runat="server" AutoPostBack="true"/>
+                                </div>
+                                <div class ="left" style="margin-left:100px">
+									<div class ="right">Đã gửi Zalo</div>
+								</div>
+								<div class="left width-100">
+									<asp:DropDownList ID="ddlIsGuiZalo" runat="server" />
 								</div>
                             </td>                            
                         </tr> 
@@ -543,7 +558,7 @@
 
                 
             } else {
-                
+                console.log(listIdKHNhacNo)
                 for (let i = 0; i < listIdKHNhacNo.length; i++) {
                     let idkh = listIdKHNhacNo[i].idkh;
                     let soTien = listIdKHNhacNo[i].tongTien;
@@ -565,8 +580,8 @@
 
                         listData.push(data)
                     }
-                    
                 }
+                
                 if (listData.length > 0) exportToExcel(listData, title)
                 listIdKHNhacNo = []
             }
@@ -627,10 +642,9 @@
 
 
             } else {
-
                 for (let i = 0; i < listIdKHNhacNo.length; i++) {
                     let idkh = listIdKHNhacNo[i].idkh;
-                    let soTien = listIdKHNhacNo[i].tongTien;
+                    let tongTien = listIdKHNhacNo[i].tongTien;
                     let m3 = listIdKHNhacNo[i].m3TieuThu;
                     let ngayThanhToan = listIdKHNhacNo[i].ngayThanhToan
                     let sdt = listIdKHNhacNo[i].soDienThoai
@@ -642,6 +656,8 @@
                     data["SDT"] = sdt;
                     data["TongTien"] = tongTien;
                     data["SoDienThoai"] = sdt;
+
+                    listData.push(data)
 
                 }
                 if (listData.length > 0) exportToExcel(listData, title)

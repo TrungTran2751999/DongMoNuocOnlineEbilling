@@ -317,6 +317,7 @@
         <ContentTemplate>
             <div class="crmcontainer" id="contNhacNo" runat="server" visible="false">  
                 <button id="btnNhacNoExcel" onclick="pheDuyetTNCN()">Duyệt tạm ngừng cấp nước</button> 
+                <a href="../../content/template/mau_huy_phe_duyet_hang_loat.xlsx">Tải mẫu excel hủy phê duyệt hàng loạt</a>
                 <label for="upload" style="float:right; background-color: #8181e3; color:white" class="custom-upload">
                     Tải lên file Excel để hủy phê duyệt hàng loạt 
                 </label>     
